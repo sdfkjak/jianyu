@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/evelengray">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/tb_head"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/evelengray"
+        app:title="@string/send" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vp2_fragments"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tb_head">
+
+    </androidx.viewpager2.widget.ViewPager2>
+
+    <RadioGroup
+        android:id="@+id/rg_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/white"
+        android:paddingTop="10dp">
+        <RadioButton
+            android:id="@+id/rb_wechat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableTop="@drawable/title_wechat_selector"
+            android:gravity="center"
+            android:text="@string/title_home"
+            android:layout_weight="1"
+            android:background="@color/white"/>
+
+        <RadioButton
+            android:id="@+id/rb_contact"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableTop="@drawable/title_contact_selector"
+            android:gravity="center"
+            android:text="@string/title_contact"
+            android:layout_weight="1"
+            android:background="@color/white"/>
+
+        <RadioButton
+            android:id="@+id/rb_mine"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:drawableTop="@drawable/title_mine_selector"
+            android:gravity="center"
+            android:text="@string/title_mine"
+            android:layout_weight="1"
+            android:background="@color/white"/>
+    </RadioGroup>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="0.3dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/rg_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

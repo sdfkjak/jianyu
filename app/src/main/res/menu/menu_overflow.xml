@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/overflow_search"
+        android:icon="@drawable/baseline_search_24"
+        app:showAsAction="ifRoom"
+        android:title="搜索" />
+
+    <item
+        android:id="@+id/overflow_startGroupChat"
+        android:icon="@drawable/baseline_chat_bubble_24"
+        android:title="发起群聊"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/overflown_addFriend"
+        android:icon="@drawable/baseline_person_add_alt_1_24"
+        android:title="添加朋友"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/overflow_sweep"
+        android:icon="@drawable/baseline_crop_free_24"
+        android:title="扫一扫"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/overflow_receiptsAndPayments"
+        android:icon="@drawable/baseline_payment_24"
+        android:title="收付款"
+        app:showAsAction="never" />
+
+</menu>
