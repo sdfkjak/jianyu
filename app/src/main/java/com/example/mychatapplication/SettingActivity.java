@@ -1,14 +1,17 @@
 package com.example.mychatapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.example.mychatapplication.database.UserInfoDatabase;
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -42,14 +45,17 @@ public class SettingActivity extends AppCompatActivity {
                             WebSocketClass.getInstance().closeWebSocket();
                             MainApplication.getInstance().clearUser();
                             UserInfoDatabase.getDatabase(SettingActivity.this).clearUserInfoDatabase();
-                            SharedPreferences sp = getSharedPreferences(LaunchActivity.preferenceName, MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sp.edit();
-                            editor.putBoolean("isLogin", false);
-                            editor.putString("jyid", "");
-                            editor.apply();
-                            Intent intent = new Intent(SettingActivity.this, LaunchActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+                            SPRepository.getInstance().saveLoginMsg(false, "");
+                            SPRepository.getInstance().getIsSaveLoginMsgOver().observe(SettingActivity.this, new Observer<Boolean>() {
+                                @Override
+                                public void onChanged(Boolean aBoolean) {
+                                    if(!aBoolean){
+                                        Intent intent = new Intent(SettingActivity.this, LaunchActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                    }
+                                }
+                            });
                         }
                     }
                 });

@@ -1,6 +1,7 @@
 package com.example.mychatapplication;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Resources;
 
 //import com.example.mychatapplication.database.UserDBHelper;
@@ -17,6 +18,7 @@ public class MainApplication extends Application {
     public static String USERINFODATABASE = "UserInfoDataBase";
     public User user;
     public static Resources resources;
+    public static Context applicationContext;
     public static MainApplication getInstance() {
         return mApp;
     }
@@ -26,6 +28,7 @@ public class MainApplication extends Application {
         super.onCreate();
         resources = getResources();
         mApp = this;
+        applicationContext = getApplicationContext();
     }
 
     public static class User {

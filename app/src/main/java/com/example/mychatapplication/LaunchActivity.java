@@ -1,6 +1,7 @@
 package com.example.mychatapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +12,10 @@ import android.widget.Button;
 
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.ImageUtil;
+
+import java.util.HashMap;
 
 public class LaunchActivity extends AppCompatActivity implements View.OnClickListener{
     public static String preferenceName = "com.example.myapp.PREFERENCE_LOGIN_STATE";
@@ -19,21 +23,25 @@ public class LaunchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences sharedPref = getSharedPreferences(preferenceName, Context.MODE_PRIVATE);
-        if(sharedPref.getBoolean("isLogin", false)){
-            String userJyId = sharedPref.getString("jyid", null);
-            MainApplication.getInstance().user = new MainApplication.User(userJyId);
-            WebSocketClass.getInstance();
-            Intent intent = new Intent(this, NavigationActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        }else{
-            setContentView(R.layout.activity_launch);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.black, null));
-            initWidget();
-            bt_login.setOnClickListener(this);
-            bt_reg.setOnClickListener(this);
-        }
+        SPRepository.getInstance().getLoginMsg();
+        SPRepository.getInstance().getLoginMsgLiveData().observe(this, new Observer<HashMap<String, String>>() {
+            @Override
+            public void onChanged(HashMap<String, String> stringStringHashMap) {
+                if(stringStringHashMap.get("isLogin").equals("true")){
+                    MainApplication.getInstance().user = new MainApplication.User(stringStringHashMap.get("jyid"));
+                    WebSocketClass.getInstance();
+                    Intent intent = new Intent(LaunchActivity.this, NavigationActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }else{
+                    setContentView(R.layout.activity_launch);
+                    getWindow().setStatusBarColor(getResources().getColor(R.color.black, null));
+                    initWidget();
+                    bt_login.setOnClickListener(LaunchActivity.this);
+                    bt_reg.setOnClickListener(LaunchActivity.this);
+                }
+            }
+        });
     }
 
     private void initWidget(){

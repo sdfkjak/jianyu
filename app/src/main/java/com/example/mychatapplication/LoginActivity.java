@@ -2,6 +2,7 @@ package com.example.mychatapplication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.OkHttpUtil;
 
 import org.json.JSONException;
@@ -64,7 +66,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     logMeg = e.toString();
                     runOnUiThread(() -> Toast.makeText(LoginActivity.this, logMeg, Toast.LENGTH_LONG));
                 }
-
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     logMeg = response.body().string();
@@ -77,16 +78,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         try {
                             //equal和==：内容比较和引用比较
                             if (logResJson.get("status").toString().equals("200") && logResJson.get("meg").toString().equals("登录成功")) {
-                                SharedPreferences sharedPreferences = LoginActivity.this.getSharedPreferences(LaunchActivity.preferenceName, Context.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putBoolean("isLogin", true);
-                                editor.putString("jyid", logResJson.get("jyId").toString());
-                                editor.apply();
-                                MainApplication.getInstance().user = new MainApplication.User(logResJson.get("jyId").toString());
-                                WebSocketClass.getInstance();
-                                Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
+                                SPRepository.getInstance().saveLoginMsg(true, logResJson.get("jyId").toString());
+                                SPRepository.getInstance().getIsSaveLoginMsgOver().observe(LoginActivity.this, new Observer<Boolean>() {
+                                    @Override
+                                    public void onChanged(Boolean aBoolean) {
+                                        try {
+                                            MainApplication.getInstance().user = new MainApplication.User(logResJson.get("jyId").toString());
+                                        } catch (JSONException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        WebSocketClass.getInstance();
+                                        Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                    }
+                                });
                             }
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
