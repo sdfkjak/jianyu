@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.util.OkHttpUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,8 +29,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
-    //http://172.19.50.90:8081/login
-    private String logUrl = "http://172.19.50.90:8081/login";
     private String logMeg;
     private JSONObject logResJson;
     private EditText et_account, et_password;
@@ -58,13 +57,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.bt_login) {
-            String account = et_account.getText().toString();
-            String password = et_password.getText().toString();
-            FormBody body = new FormBody.Builder().add("account", account).add("password", password).build();
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().post(body).url(logUrl).build();
-            Call call = client.newCall(request);
-            call.enqueue(new Callback() {
+            FormBody body = new FormBody.Builder().add("account", et_account.getText().toString()).add("password", et_password.getText().toString()).build();
+            OkHttpUtil.getInstance().sendOkHttpPostRequest(MainApplication.logUrl,body, new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     logMeg = e.toString();
@@ -100,7 +94,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     });
                 }
             });
-
         }
     }
 }

@@ -12,6 +12,5 @@ public class TalkItem{
         this.nickname = nickname;
         this.time = time;
         this.talkMeg = talkMeg;
-
     }
 }

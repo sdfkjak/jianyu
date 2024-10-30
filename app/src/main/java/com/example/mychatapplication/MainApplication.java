@@ -11,8 +11,8 @@ import okhttp3.WebSocket;
 
 public class MainApplication extends Application {
     private static MainApplication mApp;
-    //websocket连接地址
-    //ws://192.168.43.184:8080
+    public static final String regUrl = "http://172.19.50.90:8081/register";
+    public static final String logUrl = "http://172.19.50.90:8081/login";
     public static String wbUrl = "ws://172.19.50.90:8080";
     public static String USERINFODATABASE = "UserInfoDataBase";
     public User user;

@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mychatapplication.util.OkHttpUtil;
 import com.example.mychatapplication.util.PermissionUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -102,37 +103,26 @@ public class RegisteredActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void onClick(View v){
         if(v.getId() == R.id.bt_register){
-            String nickname = et_nickname.getText().toString();
-            String password = et_password.getText().toString();
-            String phone = et_phone.getText().toString();
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-            builder.addFormDataPart("nickname", nickname);
-            builder.addFormDataPart("password", password);
-            builder.addFormDataPart("phone", phone);
+            builder.addFormDataPart("nickname", et_nickname.getText().toString());
+            builder.addFormDataPart("password", et_password.getText().toString());
+            builder.addFormDataPart("phone", et_phone.getText().toString());
             if(avatar != null){
-                Log.d("avatar不为空", "adf");
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 avatar.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 byte[] avatarBytes = baos.toByteArray();
                 builder.addFormDataPart("avatar", "avatar.png", RequestBody.create(avatarBytes, MediaType.parse("image/png")));
             }
             RequestBody requestBody = builder.build();
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().post(requestBody).url(regUrl).build();
-            Call call = client.newCall(request);
-            call.enqueue(new Callback() {
+            OkHttpUtil.getInstance().sendOkHttpPostRequest(MainApplication.regUrl,requestBody, new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    Log.d("false", e.toString());
                     regMeg = e.toString();
-                    Log.d("aaaaaa", regMeg);
                     runOnUiThread(() -> Toast.makeText(RegisteredActivity.this, regMeg, Toast.LENGTH_LONG).show());
                 }
-
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     regMeg = response.body().string();
-                    Log.d("aaaaaa", regMeg);
                     runOnUiThread(() -> Toast.makeText(RegisteredActivity.this, regMeg, Toast.LENGTH_LONG).show());
                 }
             });
