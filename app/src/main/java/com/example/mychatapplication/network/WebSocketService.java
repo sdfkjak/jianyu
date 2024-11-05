@@ -63,6 +63,9 @@ public class WebSocketService {
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 super.onMessage(webSocket, text);
+                if(MainApplication.getInstance().user != null){
+                    MainApplication.getInstance().startTime();
+                }
                 Log.d(tag, "接收" + text);
                 try {
                     HashMap<String, String> result = paresStringMsg(text);

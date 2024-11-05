@@ -38,15 +38,23 @@ public class SettingActivity extends AppCompatActivity {
                     @Override
                     public void onChanged(Map<String, String> stringStringMap) {
                         WebSocketService.getInstance().clearWebSocketService();
-                        MainApplication.getInstance().clearUser();
                         UserDatabase.getInstance().clearUserDatabase();
+                        MainApplication.getInstance().clearUser();
                         SPRepository.getInstance().saveLoginMsg(false, "");
-                        Intent intent = new Intent(SettingActivity.this, LaunchActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        SPRepository.getInstance().getIsSaveLoginMsgOver().observe(SettingActivity.this, new Observer<Boolean>() {
+                            @Override
+                            public void onChanged(Boolean aBoolean) {
+                                if (aBoolean) {
+                                    Intent intent = new Intent(SettingActivity.this, LaunchActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                }
+                            }
+                        });
                     }
 
                 });
+
             }
         });
 //        tv_exit = findViewById(R.id.tv_exit);

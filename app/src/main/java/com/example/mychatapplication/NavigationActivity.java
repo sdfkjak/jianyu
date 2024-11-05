@@ -29,7 +29,6 @@ public class NavigationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityNavigationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        MainApplication.getInstance().startTime();
         tb_head = binding.tbHead;
         rg_title = binding.rgTitle;
         rb_wechat = binding.rbWechat;

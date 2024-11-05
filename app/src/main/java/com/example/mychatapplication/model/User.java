@@ -21,7 +21,6 @@ public class User implements Serializable {
     private String sex;
     @SerializedName("user_area")
     private String area;
-
     private String friendChatId;
 
     private String friendChatMessage;

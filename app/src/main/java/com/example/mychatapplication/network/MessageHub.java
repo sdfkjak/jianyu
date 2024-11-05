@@ -75,11 +75,8 @@ public class MessageHub {
                 for (int i = 0; i < friendInitJsonArray.size(); i++) {
                     User friendInitUser = new Gson().fromJson(friendInitJsonArray.get(i), User.class);
                     if(netWorkViewModel.getUserExist(friendInitUser.getJyId())){
-//                        Log.d(tag, netWorkViewModel.getUser(friendInitUser.getJyId()).getFriendChatMessage());
-                        Log.d(tag, "1");
                         netWorkViewModel.updateUser(friendInitUser.getJyId(), friendInitUser.getSex(), friendInitUser.getArea(), friendInitUser.getNickname(), friendInitUser.getFriendChatId());
                     }else{
-                        Log.d(tag, "2");
                         netWorkViewModel.insertUser(friendInitUser);
                     }
                 }
