@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/navigation_contact"
-        android:name="com.example.mychatapplication.ui.dashboard.DashboardFragment"
+        android:name="com.example.mychatapplication.ui.dashboard.ContactFragment"
         android:label="@string/title_contact"
         tools:layout="@layout/fragment_dashboard" />
 

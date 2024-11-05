@@ -4,9 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,7 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.network.WebSocketService;
 import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.OkHttpUtil;
 
@@ -37,7 +35,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private ImageView iv_close;
     private Button bt_login;
     private Intent mIntent;
-    private UserInfoRepository userInfoRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +84,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         } catch (JSONException e) {
                                             throw new RuntimeException(e);
                                         }
-                                        WebSocketClass.getInstance();
+                                        WebSocketService.getInstance();
                                         Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                         startActivity(intent);

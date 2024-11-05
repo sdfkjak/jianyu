@@ -106,7 +106,7 @@ public class UserInfoRepository {
                         insertUpdate();
                         insertUpdateCode = "0";
                         WebSocketClass.getInsertUpdateLinkedListMutableLiveData().getValue().removeFirst();
-                        WebSocketClass.getInsertUpdateLinkedListMutableLiveData().postValue(WebSocketClass.getInstance().getInsertUpdateLinkedListMutableLiveData().getValue());
+//                        WebSocketClass.getInsertUpdateLinkedListMutableLiveData().postValue(WebSocketClass.getInstance().getInsertUpdateLinkedListMutableLiveData().getValue());
                     });
                 } else {
                     Log.d("插入更新", "全部结束");
@@ -192,59 +192,4 @@ public class UserInfoRepository {
             }
         }
     }
-
-//    public static class QueryUserExistWork extends Worker{
-//        private WorkerParameters inputData;
-//        public QueryUserExistWork(@NonNull Context context, @NonNull WorkerParameters workerParams) {
-//            super(context, workerParams);
-//        }
-//
-//        @NonNull
-//        @Override
-//        public Result doWork() {
-//            UserInfoDatabase userInfoDatabase = UserInfoDatabase.getDatabase(MainApplication.getInstance().getApplicationContext());
-//            UserInfoDao userInfoDao = userInfoDatabase.getUserInfoDao();
-//
-//            String item = getInputData().getString("item");
-//            String source = getInputData().getString("source");
-//            Boolean isExist =  Boolean.valueOf(userInfoDao.userExist(source));
-//
-//            Data outputData = new Data.Builder()
-//                    .putBoolean("isExist", isExist)
-//                    .build();
-//            return Result.success();
-//        }
-//    }
-
-//    public static class InsertUpdate extends Worker{
-//        private WorkerParameters inputData;
-//        public InsertUpdate(@NonNull Context context, @NonNull WorkerParameters workerParams) {
-//            super(context, workerParams);
-//        }
-//
-//        @NonNull
-//        @Override
-//        public Result doWork() {
-//            UserInfoDatabase userInfoDatabase = UserInfoDatabase.getDatabase(MainApplication.getInstance().getApplicationContext());
-//            UserInfoDao userInfoDao = userInfoDatabase.getUserInfoDao();
-//
-//            String item = getInputData().getString("item");
-//            String source = getInputData().getString("source");
-//
-//            switch(Objects.requireNonNull(item)){
-//                case "avatar":
-//                    byte[] imgBytes = getInputData().getByteArray("value");
-//                    userInfoDao.updateAvatar(source, new String(imgBytes));
-//                    break;
-//                case "nickname":
-//                    String nickname = getInputData().getString("value");
-//                    userInfoDao.updateNickname(source, nickname);
-//                    break;
-//                default:
-//                    Log.d("不存在", item);
-//            }
-//
-//            return Result.success();
-//        }
-//    }
 }

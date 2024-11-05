@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.text.BoringLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,21 +15,24 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.R;
-import com.example.mychatapplication.commomclass.friendapplication.CommonUserInfo;
-import com.example.mychatapplication.util.ImageUtil;
+import com.example.mychatapplication.model.User;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.io.File;
 
-public class QueryUserDetailAdapter extends RecyclerView.Adapter<QueryUserDetailAdapter.QueryUserDetailViewHolder> {
-    private CommonUserInfo commonUserInfo;
+public class SearchUserDetailAdapter extends RecyclerView.Adapter<SearchUserDetailAdapter.QueryUserDetailViewHolder> {
+    private User searchUser;
     private Context context;
     private String[] items = {"设置备注和标签", "个性签名", "来源"};
 
-    public QueryUserDetailAdapter(Context context, CommonUserInfo commonUserInfo) {
+    public SearchUserDetailAdapter(Context context, User searchUser) {
         this.context = context;
-        this.commonUserInfo = commonUserInfo;
+        this.searchUser = searchUser;
     }
 
     @NonNull
@@ -56,11 +58,14 @@ public class QueryUserDetailAdapter extends RecyclerView.Adapter<QueryUserDetail
     public void onBindViewHolder(@NonNull QueryUserDetailViewHolder holder, int position) {
         holder.itemView.setBackgroundResource(R.color.white);
         if(position == 0){
-            holder.iv_avatar.setImageBitmap(BitmapFactory.decodeByteArray(commonUserInfo.getAvatarBytes(), 0, commonUserInfo.getAvatarBytes().length));
-            holder.tv_nickname.setText(commonUserInfo.getNickname());
-            holder.tv_area.setText(commonUserInfo.getArea());
+//            holder.iv_avatar.setImageBitmap(BitmapFactory.decodeByteArray(searchUser.getAvatarBytes(), 0, searchUser.getAvatarBytes().length));
+            RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().cacheFolder, searchUser.getJyId()));
+            RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
+            builder.apply(options).into(holder.iv_avatar);
+            holder.tv_nickname.setText(searchUser.getNickname());
+            holder.tv_area.setText(searchUser.getArea());
             Drawable drawable;
-            if(commonUserInfo.getSex().equals("0")){
+            if(searchUser.getSex().equals("0")){
                 drawable = context.getResources().getDrawable(R.drawable.baseline_female_24, null);
             }else{
                 drawable = context.getResources().getDrawable(R.drawable.baseline_male_24, null);

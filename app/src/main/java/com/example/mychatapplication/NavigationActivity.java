@@ -2,44 +2,20 @@ package com.example.mychatapplication;
 
 import static com.example.mychatapplication.util.ToolbarUtil.setToolbarTitleCenter;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
 import com.example.mychatapplication.adapter.TapPagerAdapter;
-import com.example.mychatapplication.ui.dashboard.DashboardFragment;
-import com.example.mychatapplication.ui.home.HomeFragment;
-import com.example.mychatapplication.ui.notifications.NotificationsFragment;
-import com.example.mychatapplication.util.ToolbarUtil;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.mychatapplication.databinding.ActivityNavigationBinding;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 import androidx.viewpager2.widget.ViewPager2;
-
-import com.example.mychatapplication.databinding.ActivityNavigationBinding;
 
 public class NavigationActivity extends AppCompatActivity {
     private ActivityNavigationBinding binding;
@@ -53,6 +29,7 @@ public class NavigationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityNavigationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        MainApplication.getInstance().startTime();
         tb_head = binding.tbHead;
         rg_title = binding.rgTitle;
         rb_wechat = binding.rbWechat;

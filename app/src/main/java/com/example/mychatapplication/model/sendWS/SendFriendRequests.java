@@ -1,6 +1,7 @@
-package com.example.mychatapplication.commomclass.friendapplication;
+package com.example.mychatapplication.model.sendWS;
 
 import com.example.mychatapplication.MainApplication;
+import com.example.mychatapplication.commomclass.friendapplication.FriendRequestMessage;
 
 import java.util.Date;
 

@@ -18,15 +18,17 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.PersonInfoActivity;
 import com.example.mychatapplication.R;
 import com.example.mychatapplication.SettingActivity;
-import com.example.mychatapplication.database.UserInfo;
-import com.example.mychatapplication.ui.notifications.NotificationsFragment;
+import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.util.ImageUtil;
 
+import java.io.File;
+
 public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder> {
-    private UserInfo userInfo;
+    private User user;
     private Context context;
     private static final String[] mineCommonItem = {"服务", "收藏", "朋友圈", "卡包", "表情", "设置"};
 
@@ -34,8 +36,8 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
         this.context = context;
     }
 
-    public void setUserInfo(UserInfo userInfo) {
-        this.userInfo = userInfo;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @NonNull
@@ -65,12 +67,11 @@ public class MineAdapter extends RecyclerView.Adapter<MineAdapter.MineViewHolder
         int spacingPy = (int) Math.round(height * 0.01);
         switch (position){
             case 0:
-                RequestBuilder<Drawable> builder = Glide.with(context).load(ImageUtil.convertBase64ToBitmap(userInfo.getAvatar()));
+                RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, user.getJyId()));
                 RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
                 builder.apply(options).into(holder.iv_avatar);
-//                holder.iv_avatar.setImageBitmap(ImageUtil.convertBase64ToBitmap(userInfo.getAvatar()));
-                holder.tv_nickname.setText(userInfo.getNickname());
-                holder.tv_jyId.setText(userInfo.getJyId());
+                holder.tv_nickname.setText(user.getNickname());
+                holder.tv_jyId.setText(user.getJyId());
                 ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
                 param.bottomMargin = spacingPy;
                 holder.itemView.setLayoutParams(param);

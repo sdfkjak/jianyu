@@ -3,19 +3,13 @@ package com.example.mychatapplication.database;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import com.example.mychatapplication.MainApplication;
-import com.example.mychatapplication.commomclass.PrivateChat.FriendChatMessage;
 import com.google.gson.annotations.SerializedName;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

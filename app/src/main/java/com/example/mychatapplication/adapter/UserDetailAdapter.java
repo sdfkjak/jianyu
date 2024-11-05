@@ -1,7 +1,8 @@
 package com.example.mychatapplication.adapter;
 
+import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,17 +14,28 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.mychatapplication.ChatActivity;
+import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.R;
-import com.example.mychatapplication.database.UserInfo;
-import com.example.mychatapplication.util.ImageUtil;
+import com.example.mychatapplication.model.User;
+
+import java.io.File;
 
 public class UserDetailAdapter extends RecyclerView.Adapter<UserDetailAdapter.UserDetailViewHolder> {
-    private UserInfo userInfo;
+    private User user;
+    private Context context;
     private String itemString[] = {"设置备注和标签", "朋友权限", "朋友圈", "视频号", "更多信息", "发消息", "音视频通话"};
 
-    public void setUserInfo(UserInfo userInfo) {
-        this.userInfo = userInfo;
+    public UserDetailAdapter(Context context) {
+        this.context = context;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @NonNull
@@ -42,10 +54,13 @@ public class UserDetailAdapter extends RecyclerView.Adapter<UserDetailAdapter.Us
             holder.tv_nickName.setVisibility(View.VISIBLE);
             holder.tv_jyId.setVisibility(View.VISIBLE);
             holder.tv_area.setVisibility(View.VISIBLE);
-            holder.iv_avatar.setImageBitmap(ImageUtil.convertBase64ToBitmap(userInfo.getAvatar()));
-            holder.tv_nickName.setText(userInfo.getNickname());
-            holder.tv_jyId.setText(userInfo.getJyId());
-            holder.tv_area.setText(userInfo.getArea());
+//            holder.iv_avatar.setImageBitmap(ImageUtil.convertBase64ToBitmap(user.getAvatar()));
+            RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, user.getJyId()));
+            RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
+            builder.apply(options).into(holder.iv_avatar);
+            holder.tv_nickName.setText(user.getNickname());
+            holder.tv_jyId.setText(user.getJyId());
+            holder.tv_area.setText(user.getArea());
         }else{
             if(itemString[position - 1].equals("发消息")){
                 holder.tv_centerItem.setVisibility(View.VISIBLE);
@@ -54,8 +69,7 @@ public class UserDetailAdapter extends RecyclerView.Adapter<UserDetailAdapter.Us
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(v.getContext(), ChatActivity.class);
-                        intent.putExtra("jyId", userInfo.getJyId());
-                        Log.d("图片长度2", userInfo.getJyId());
+                        intent.putExtra("jyId", user.getJyId());
                         v.getContext().startActivity(intent);
                     }
                 });

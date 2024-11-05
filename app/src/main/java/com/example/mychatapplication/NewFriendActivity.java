@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,26 +15,26 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.example.mychatapplication.adapter.FriendRequestAdapter;
-import com.example.mychatapplication.commomclass.friendapplication.ReceiveFriendRequest;
 import com.example.mychatapplication.customview.LeftImgButton;
-import com.example.mychatapplication.database.UserInfo;
+import com.example.mychatapplication.model.FriendRequest;
 import com.example.mychatapplication.util.ToolbarUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewFriendActivity extends AppCompatActivity{
+public class NewFriendActivity extends AppCompatActivity {
     private Toolbar tb_head;
     private RecyclerView rv_friendRequests;
     private LeftImgButton bt_searchAccount;
     private FriendRequestAdapter friendRequestAdapter;
-    private List<UserInfo> friendRequestList = new ArrayList<>();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_friend);
+
+        NewFriendViewModel newFriendViewModel = new ViewModelProvider(this).get(NewFriendViewModel.class);
 
         tb_head = findViewById(R.id.tb_head);
         tb_head.setNavigationIcon(R.drawable.back);
@@ -53,22 +54,28 @@ public class NewFriendActivity extends AppCompatActivity{
         bt_searchAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(NewFriendActivity.this, AddFriendActivity.class));
+                startActivity(new Intent(NewFriendActivity.this, SearchFriendActivity.class));
             }
         });
         rv_friendRequests = findViewById(R.id.rv_friendRequests);
-        friendRequestAdapter = new FriendRequestAdapter();
+        friendRequestAdapter = new FriendRequestAdapter(this);
         rv_friendRequests.setLayoutManager(new LinearLayoutManager(this));
         rv_friendRequests.setAdapter(friendRequestAdapter);
 
-        WebSocketClass.getInstance().getListMutableLiveData().observe(this, new Observer<ArrayList<ReceiveFriendRequest>>() {
+        newFriendViewModel.getFriendRequestArrayListLiveData().observe(this, new Observer<ArrayList<FriendRequest>>() {
             @Override
-            public void onChanged(ArrayList<ReceiveFriendRequest> receiveFriendRequests) {
-                friendRequestAdapter.setReceiveFriendRequestList(receiveFriendRequests);
+            public void onChanged(ArrayList<FriendRequest> friendRequests) {
+                friendRequestAdapter.setReceiveFriendRequestList(friendRequests);
                 friendRequestAdapter.notifyDataSetChanged();
             }
         });
 
+        newFriendViewModel.getWSFriendApplicationInit().observe(this, new Observer<FriendRequest[]>() {
+            @Override
+            public void onChanged(FriendRequest[] friendRequests) {
+                newFriendViewModel.addFriendRequest(friendRequests);
+            }
+        });
     }
 
     @Override
@@ -79,9 +86,9 @@ public class NewFriendActivity extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.overflow_add_friend:
-                startActivity(new Intent(this, AddFriendActivity.class));
+                startActivity(new Intent(this, SearchFriendActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

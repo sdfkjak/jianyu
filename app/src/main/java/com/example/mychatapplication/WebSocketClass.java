@@ -1,7 +1,5 @@
 package com.example.mychatapplication;
 
-import android.app.Activity;
-import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -11,9 +9,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import com.example.mychatapplication.commomclass.friendapplication.CommonUserInfo;
-import com.example.mychatapplication.commomclass.friendapplication.ReceiveFriendRequest;
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.model.FriendRequest;
 import com.example.mychatapplication.util.FileUtil;
 import com.google.gson.Gson;
 
@@ -40,13 +38,13 @@ public class WebSocketClass {
     private OkHttpClient client;
     private Request request;
     private okhttp3.WebSocket webSocket;
-    private MutableLiveData<ArrayList<ReceiveFriendRequest>> listMutableLiveData = new MutableLiveData<>(new ArrayList<>());
+    private MutableLiveData<ArrayList<FriendRequest>> listMutableLiveData = new MutableLiveData<>(new ArrayList<>());
     private static UserInfoRepository userInfoRepository = new UserInfoRepository(MainApplication.getInstance().getApplicationContext());
     private static LiveData<List<UserInfo> > newFriendLiveData;
     private static HashMap<String, String> newFriendMessageMap = new HashMap<>();
     private static MutableLiveData<LinkedList<UserInfoRepository.InsertUpdate>> insertUpdateLinkedListMutableLiveData = new MutableLiveData<>(new LinkedList<>());
 
-    public MutableLiveData<ArrayList<ReceiveFriendRequest>> getListMutableLiveData() {
+    public MutableLiveData<ArrayList<FriendRequest>> getListMutableLiveData() {
         return listMutableLiveData;
     }
 
@@ -104,6 +102,7 @@ public class WebSocketClass {
                 .build();
         WebSocketListener listener = createWebSocketListener();
         webSocket = client.newWebSocket(request, listener);
+
     }
     private WebSocketListener createWebSocketListener(){
         return new WebSocketListener() {
@@ -156,19 +155,19 @@ public class WebSocketClass {
                 }
                 try {
                     if (jsonObject.getString("type").equals("FRIENDAPPLICATION")) {
-                        boolean insertBefore = false;
-                        ReceiveFriendRequest receiveFriendRequest = gson.fromJson(jsonObject.toString(), ReceiveFriendRequest.class);
-                        for (int i = 0; i < listMutableLiveData.getValue().size(); i++) {
-                            if(listMutableLiveData.getValue().get(i).getCommonUserInfo().getJyId().equals(receiveFriendRequest.getCommonUserInfo().getJyId())){
-                                insertBefore = true;
-                                receiveFriendRequest.getCommonUserInfo().setAvatarBytes(listMutableLiveData.getValue().get(i).getCommonUserInfo().getAvatarBytes());
-                                listMutableLiveData.getValue().remove(i);
-                                listMutableLiveData.getValue().add(receiveFriendRequest);
-                            }
-                        }
-                        if(!insertBefore){
-                            listMutableLiveData.getValue().add(receiveFriendRequest);
-                        }
+//                        boolean insertBefore = false;
+//                        FriendRequest friendRequest = gson.fromJson(jsonObject.toString(), FriendRequest.class);
+//                        for (int i = 0; i < listMutableLiveData.getValue().size(); i++) {
+//                            if(listMutableLiveData.getValue().get(i).getCommonUserInfo().getJyId().equals(friendRequest.getCommonUserInfo().getJyId())){
+//                                insertBefore = true;
+//                                friendRequest.getCommonUserInfo().setAvatarBytes(listMutableLiveData.getValue().get(i).getCommonUserInfo().getAvatarBytes());
+//                                listMutableLiveData.getValue().remove(i);
+//                                listMutableLiveData.getValue().add(friendRequest);
+//                            }
+//                        }
+//                        if(!insertBefore){
+//                            listMutableLiveData.getValue().add(friendRequest);
+//                        }
                     } else {
                         ;
                     }
@@ -177,27 +176,27 @@ public class WebSocketClass {
                 }
                 try {
                     if (jsonObject.getString("type").equals("FRIENDAPPLICATIONINIT")) {
-                        Log.d("好友申请", "JSON数据");
-                        boolean insertBefore = false;
-                        JSONArray friendApplicationListJson = jsonObject.getJSONArray("FRIENDAPPLICATIONINITLIST");
-                        ReceiveFriendRequest[] receiveFriendRequest = gson.fromJson(friendApplicationListJson.toString(), ReceiveFriendRequest[].class);
-                        for (ReceiveFriendRequest friendRequest : receiveFriendRequest) {
-                            for (int i = 0; i < listMutableLiveData.getValue().size(); i++) {
-                                if(listMutableLiveData.getValue().get(i).getCommonUserInfo().getJyId().equals(friendRequest.getCommonUserInfo().getJyId())){
-                                    insertBefore = true;
-                                    Log.d("好友申请", "已经插入图片");
-                                    friendRequest.getCommonUserInfo().setAvatarBytes(listMutableLiveData.getValue().get(i).getCommonUserInfo().getAvatarBytes());
-                                    listMutableLiveData.getValue().remove(i);
-                                    listMutableLiveData.getValue().add(friendRequest);
-                                    listMutableLiveData.postValue(listMutableLiveData.getValue());
-                                    Log.d("好友申请", String.valueOf(listMutableLiveData.getValue().size()));
-                                }
-                            }
-                            if(!insertBefore){
-                                Log.d("好友申请", "还没插入图片");
-                                listMutableLiveData.getValue().add(friendRequest);
-                            }
-                        }
+//                        Log.d("好友申请", "JSON数据");
+//                        boolean insertBefore = false;
+//                        JSONArray friendApplicationListJson = jsonObject.getJSONArray("FRIENDAPPLICATIONINITLIST");
+//                        FriendRequest[] receiveFriendRequest = gson.fromJson(friendApplicationListJson.toString(), FriendRequest[].class);
+//                        for (FriendRequest friendRequest : receiveFriendRequest) {
+//                            for (int i = 0; i < listMutableLiveData.getValue().size(); i++) {
+//                                if(listMutableLiveData.getValue().get(i).getCommonUserInfo().getJyId().equals(friendRequest.getCommonUserInfo().getJyId())){
+//                                    insertBefore = true;
+//                                    Log.d("好友申请", "已经插入图片");
+//                                    friendRequest.getCommonUserInfo().setAvatarBytes(listMutableLiveData.getValue().get(i).getCommonUserInfo().getAvatarBytes());
+//                                    listMutableLiveData.getValue().remove(i);
+//                                    listMutableLiveData.getValue().add(friendRequest);
+//                                    listMutableLiveData.postValue(listMutableLiveData.getValue());
+//                                    Log.d("好友申请", String.valueOf(listMutableLiveData.getValue().size()));
+//                                }
+//                            }
+//                            if(!insertBefore){
+//                                Log.d("好友申请", "还没插入图片");
+//                                listMutableLiveData.getValue().add(friendRequest);
+//                            }
+//                        }
                     } else {
                         ;
                     }
@@ -321,22 +320,22 @@ public class WebSocketClass {
                     insertUpdateLinkedListMutableLiveData.postValue(insertUpdateLinkedListMutableLiveData.getValue());
                 }
                 if (typeString.equals("FRIENDAPPLICATIONINIT")) {
-                    Log.d("好友申请", "字节数据");
-                    boolean insertBefore = false;
-                    ArrayList<ReceiveFriendRequest> receiveFriendRequestArrayList = listMutableLiveData.getValue();
-                    for (int i = 0; i < receiveFriendRequestArrayList.size(); i++) {
-                        if(receiveFriendRequestArrayList.get(i).getCommonUserInfo().getJyId().equals(sourceString)){
-                            insertBefore = true;
-                            Log.d("好友申请", "已经插入个人信息");
-                            listMutableLiveData.getValue().get(i).getCommonUserInfo().setAvatarBytes(imgBytes);
-                            listMutableLiveData.postValue(listMutableLiveData.getValue());
-                            break;
-                        }
-                    }
-                    if(!insertBefore){
-                        Log.d("好友申请", "还没插入个人信息");
-                        listMutableLiveData.getValue().add(new ReceiveFriendRequest(new CommonUserInfo(sourceString, imgBytes)));
-                    }
+//                    Log.d("好友申请", "字节数据");
+//                    boolean insertBefore = false;
+//                    ArrayList<FriendRequest> friendRequestArrayList = listMutableLiveData.getValue();
+//                    for (int i = 0; i < friendRequestArrayList.size(); i++) {
+//                        if(friendRequestArrayList.get(i).getCommonUserInfo().getJyId().equals(sourceString)){
+//                            insertBefore = true;
+//                            Log.d("好友申请", "已经插入个人信息");
+//                            listMutableLiveData.getValue().get(i).getCommonUserInfo().setAvatarBytes(imgBytes);
+//                            listMutableLiveData.postValue(listMutableLiveData.getValue());
+//                            break;
+//                        }
+//                    }
+//                    if(!insertBefore){
+//                        Log.d("好友申请", "还没插入个人信息");
+//                        listMutableLiveData.getValue().add(new FriendRequest(new CommonUserInfo(sourceString, imgBytes)));
+//                    }
                 }
                 if (typeString.equals("ADDFRIENDINFO") || typeString.equals("FRIENDINIT")) {
                     insertUpdateLinkedListMutableLiveData.getValue().addLast(userInfoRepository.insertUpdate(new UserInfo(sourceString, img)));
@@ -368,7 +367,7 @@ public class WebSocketClass {
                     Log.d("WebSocket 连接失败 onFailure：", response.message());
                 }
                 Log.d( "WebSocket 连接失败异常原因：", t.getMessage());
-                WebSocketClass.getInstance().webSocket = client.newWebSocket(request, createWebSocketListener());
+//                WebSocketClass.getInstance().webSocket = client.newWebSocket(request, createWebSocketListener());
             }
         };
     }

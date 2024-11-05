@@ -1,9 +1,7 @@
 package com.example.mychatapplication;
 
-import static android.view.KeyEvent.KEYCODE_BACKSLASH;
 import static com.example.mychatapplication.util.ToolbarUtil.setToolbarTitleCenter;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -14,82 +12,56 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.example.mychatapplication.adapter.MoreActionAdapter;
 import com.example.mychatapplication.adapter.PrivateChatAdapter;
-import com.example.mychatapplication.adapter.PrivateChatInfo;
-import com.example.mychatapplication.commomclass.PrivateChat.FriendChat;
-import com.example.mychatapplication.commomclass.PrivateChat.FriendChatMessage;
-import com.example.mychatapplication.commomclass.TalkMessage;
-import com.example.mychatapplication.database.UserInfo;
-import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.model.ChatMessage;
+import com.example.mychatapplication.model.FriendChat;
+import com.example.mychatapplication.model.User;
+import com.example.mychatapplication.model.sendWS.TimeStamp;
+import com.example.mychatapplication.network.WebSocketService;
+import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
 import com.example.mychatapplication.util.ChatUtil;
-import com.example.mychatapplication.util.FileUtil;
 import com.example.mychatapplication.util.PermissionUtil;
-import com.example.mychatapplication.util.ToolbarUtil;
-import com.example.mychatapplication.widget.ExtendAnimation;
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import okio.ByteString;
 
 public class ChatActivity extends AppCompatActivity {
+    private final static String tag = "ChatActivity";
     private EditText et_message;
     private Button bt_send;
     private ImageView iv_moreAction, iv_expression, iv_voiceInput;
@@ -99,7 +71,7 @@ public class ChatActivity extends AppCompatActivity {
     private MoreActionAdapter moreActionAdapter;
     private Toolbar tb_head;
     private String chatTargetJyId, chatTargetNickname, chatTargetAvatar;
-    private UserInfo targetUserInfo;
+    private User targetUser;
     private ChatViewModel chatViewModel;
     private boolean innerTrigger = false;
     private int windowHeight = 0;
@@ -121,6 +93,8 @@ public class ChatActivity extends AppCompatActivity {
     private boolean firstIn;
     private int oldFriendChatMessagesLength = 0;
     private boolean isFirstIn = true;
+    private int oldChatMessageLength;
+    private ImageView iv_compression;
     public ActivityResultLauncher getSelectPhotoAlbumLauncher() {
         return selectPhotoAlbumLauncher;
     }
@@ -144,6 +118,13 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
         initMoreActionAnim();
+        iv_expression = findViewById(R.id.iv_expression);
+        iv_expression.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
+            }
+        });
         rv_moreActionContainer = findViewById(R.id.rv_moreActionContainer);
         rv_moreActionContainer.setLayoutManager(new GridLayoutManager(this, 4));
         moreActionAdapter = new MoreActionAdapter(this);
@@ -151,8 +132,7 @@ public class ChatActivity extends AppCompatActivity {
         rv_moreActionContainerParams = rv_moreActionContainer.getLayoutParams();
         et_message = findViewById(R.id.et_message);
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        privateChatAdapter = new PrivateChatAdapter(this);
+        chatTargetJyId = getIntent().getExtras().getString("jyId");
 
         tb_head = findViewById(R.id.tb_head);
         setSupportActionBar(tb_head);
@@ -161,12 +141,6 @@ public class ChatActivity extends AppCompatActivity {
         tb_head.setNavigationIcon(R.drawable.baseline_chevron_left_24);
 
         chatViewModel = new ChatViewModel(getApplication());
-        chatViewModel.getCurrentUserInfoLiveData().observe(this, new Observer<UserInfo>() {
-            @Override
-            public void onChanged(UserInfo userInfo) {
-                privateChatAdapter.setMyAvatar(userInfo.getAvatar());
-            }
-        });
         iv_moreAction = findViewById(R.id.iv_moreAction);
         bt_send = findViewById(R.id.bt_send);
         ViewGroup.LayoutParams bt_sendParams = bt_send.getLayoutParams();
@@ -206,63 +180,33 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
-        chatTargetJyId = getIntent().getExtras().getString("jyId");
-        chatViewModel.getUserInfo(chatTargetJyId).observe(this, new Observer<UserInfo>() {
+
+        chatViewModel.getUserLiveData(chatTargetJyId).observe(this, new Observer<User>() {
             @Override
-            public void onChanged(UserInfo userInfo) {
-                if (userInfo != null) {
+            public void onChanged(User user) {
+                if (user != null) {
+                    if (user.getFriendChatMessage() != null)
+                        Log.d(tag, user.getFriendChatMessage());
                     //这个if就当初始化
-                    if(targetUserInfo == null){
-                        Log.d("图片长度4", "chushihua1");
-                        targetUserInfo = userInfo;
-                        privateChatAdapter.setFriendChatId(userInfo.getFriendChatId());
-                        privateChatAdapter.setOtherAvatar(userInfo.getAvatar());
-                        privateChatAdapter.setOtherJyId(userInfo.getJyId());
-                        tb_head.setTitle(userInfo.getNickname());
+                    if (targetUser == null) {
+                        targetUser = user;
+                        privateChatAdapter = new PrivateChatAdapter(ChatActivity.this, user);
+                        tb_head.setTitle(user.getNickname());
                         rv_chat = findViewById(R.id.rc_chat);
                         rv_chat.setLayoutManager(new MyLinearLayout(ChatActivity.this));
                         rv_chat.setAdapter(privateChatAdapter);
                     }
-                    if (userInfo.getFriendChatMessages() != null) {
-                        ArrayList<PrivateChatInfo> privateChatInfoArrayList = new ArrayList<>();
-                        FriendChatMessage[] friendChatMessages = (new Gson()).fromJson(userInfo.getFriendChatMessages(), FriendChatMessage[].class);
-                        int newFriendChatMessagesLength= friendChatMessages.length;
-                        int upDateLength = newFriendChatMessagesLength - oldFriendChatMessagesLength;
-                        if(upDateLength == 0){
-                        } else if (upDateLength == 1) {
-                            if(privateChatAdapter.getChatDetailItemArrayList().size() == 0){
-                                privateChatAdapter.getChatDetailItemArrayList().add(new PrivateChatAdapter.ChatDetailItem(PrivateChatAdapter.ChatType.TIME.toString(), friendChatMessages[friendChatMessages.length - 1].getTimestamp()));
-                                privateChatAdapter.notifyItemInserted(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                            }
-                            for (int i = privateChatAdapter.getChatDetailItemArrayList().size() - 1 ; i > 0; i--) {
-                                if(privateChatAdapter.getChatDetailItemArrayList().get(i).getType().equals("MYCHAT") || privateChatAdapter.getChatDetailItemArrayList().get(i).getType().equals("OTHERCHAT")){
-                                    if(friendChatMessages[friendChatMessages.length - 1].getTimestamp() - privateChatAdapter.getChatDetailItemArrayList().get(i).getTimestamp() > 60 * 1000){
-                                        privateChatAdapter.getChatDetailItemArrayList().add(new PrivateChatAdapter.ChatDetailItem(PrivateChatAdapter.ChatType.TIME.toString(), friendChatMessages[friendChatMessages.length - 1].getTimestamp()));
-                                        privateChatAdapter.notifyItemInserted(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                                    }
-                                    break;
-                                }
-                            }
-                            if(friendChatMessages[friendChatMessages.length - 1].getType().equals("TEXT")){
-                                privateChatAdapter.getChatDetailItemArrayList().add(new PrivateChatAdapter.ChatDetailItem(friendChatMessages[friendChatMessages.length - 1].getSource().equals(MainApplication.getInstance().user.jyId) ? "MYCHAT":"OTHERCHAT", friendChatMessages[friendChatMessages.length - 1].getContent(), friendChatMessages[friendChatMessages.length - 1].getTimestamp()));
-                            }else if (friendChatMessages[friendChatMessages.length - 1].getType().equals("FRIENDCHATIMAGEMESSAGE")){
-                                privateChatAdapter.getChatDetailItemArrayList().add(new PrivateChatAdapter.ChatDetailItem(friendChatMessages[friendChatMessages.length - 1].getSource().equals(MainApplication.getInstance().user.jyId) ? "MYCHAT":"OTHERCHAT", friendChatMessages[friendChatMessages.length - 1].getTimestamp()));
-                            }
-                            privateChatAdapter.notifyItemInserted(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                        }else{
-                            for (FriendChatMessage friendChatMessage : friendChatMessages) {
-                                if(friendChatMessage.getType().equals("TEXT")){
-                                    privateChatInfoArrayList.add(new PrivateChatInfo(friendChatMessage.getSource().equals(MainApplication.getInstance().user.jyId), friendChatMessage.getTimestamp(), friendChatMessage.getContent()));
-                                } else if (friendChatMessage.getType().equals("FRIENDCHATIMAGEMESSAGE")) {
-                                    privateChatInfoArrayList.add(new PrivateChatInfo(friendChatMessage.getSource().equals(MainApplication.getInstance().user.jyId), friendChatMessage.getType(), friendChatMessage.getTimestamp()));
-                                }
-                            }
-                            privateChatAdapter.setPrivateChatInfoList(privateChatInfoArrayList);
-                            privateChatAdapter.notifyDataSetChanged();
-                        }
-                        rv_chat.setItemViewCacheSize(privateChatAdapter.getChatDetailItemArrayList().size());
-                        rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                        oldFriendChatMessagesLength = newFriendChatMessagesLength;
+                    if (user.getFriendChatMessage() != null) {
+                        ChatMessage[] totalChatMessages = (new Gson()).fromJson(user.getFriendChatMessage(), ChatMessage[].class);
+                        int addMessageLength = totalChatMessages.length - oldChatMessageLength;
+                        ChatMessage[] newChatMessages = new ChatMessage[addMessageLength];
+                        System.arraycopy(totalChatMessages, oldChatMessageLength, newChatMessages, 0, totalChatMessages.length - oldChatMessageLength);
+                        oldChatMessageLength = oldChatMessageLength + addMessageLength;
+                        chatViewModel.addChatDetailItemList(Arrays.asList(newChatMessages));
+                        privateChatAdapter.setChatDetailItemList(chatViewModel.getChatDetailItemList());
+                        privateChatAdapter.notifyItemRangeInserted(chatViewModel.getChatDetailItemList().size() - 1, chatViewModel.getAddChatDetailItemCount());
+//                        rv_chat.setItemViewCacheSize(privateChatAdapter.getChatMessageList().size());
+                        rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
                     }
                 }
             }
@@ -280,7 +224,6 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
                 String message = editable.toString().trim();
                 if (isMessageLastEmpty && !message.equals("")) {
                     isMessageLastEmpty = false;
@@ -300,7 +243,7 @@ public class ChatActivity extends AppCompatActivity {
         et_message.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus && isMoreActionUp){
+                if (hasFocus && isMoreActionUp) {
                     rv_moreActionContainerAlphaAnim.reverse();
                 }
             }
@@ -324,21 +267,23 @@ public class ChatActivity extends AppCompatActivity {
                             setUpItem("keyboard", true);
                         } else {
                             Log.d("kkkkkkkkcuowudian", String.valueOf(height));
-                            if(!isMoreActionUp && isKeyboardUp){
+                            if (!isMoreActionUp && isKeyboardUp) {
                                 setUpItem("all", false);
                             }
                         }
                     }
-                    if (privateChatAdapter.getChatDetailItemArrayList().size() - 1 > 0 && windowHeight != height) {
-                        Log.d("触发", "触发1");
-                        rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                        innerTrigger = true;
-                    }
-                    if (privateChatAdapter.getChatDetailItemArrayList().size() - 1 > 0 && isFirstIn) {
-                        Log.d("触发", "触发1");
-                        rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
-                        isFirstIn = false;
-                        innerTrigger = true;
+                    if(privateChatAdapter != null){
+                        if (privateChatAdapter.getChatDetailItemList().size() - 1 > 0 && windowHeight != height) {
+                            Log.d("触发", "触发1");
+                            rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
+                            innerTrigger = true;
+                        }
+                        if (privateChatAdapter.getChatDetailItemList().size() - 1 > 0 && isFirstIn) {
+                            Log.d("触发", "触发1");
+                            rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
+                            isFirstIn = false;
+                            innerTrigger = true;
+                        }
                     }
                 } else {
                     innerTrigger = false;
@@ -354,61 +299,57 @@ public class ChatActivity extends AppCompatActivity {
         bt_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String message = et_message.getText().toString();
-                long sendTimestamp = System.currentTimeMillis();
-                try {
-                    sendMessage(message, sendTimestamp);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                chatViewModel.setWaitForSend(true);
+                WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new TimeStamp()));
+            }
+        });
+        chatViewModel.getWSResponseTimestamp().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                if (chatViewModel.isWaitForSend()) {
+                    chatViewModel.setWaitForSend(false);
+                    String message = et_message.getText().toString();
+                    try {
+                        sendMessage(message);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, message, Long.parseLong(s)));
+                    WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
+                    chatViewModel.insertSendMsgToDB(chatTargetJyId, new ChatMessage(MainApplication.getInstance().user.jyId, message, Long.parseLong(s)));
                 }
-                WebSocketClass.getInstance().getWebSocket().send((new Gson()).toJson(new FriendChat(targetUserInfo.getFriendChatId(), targetUserInfo.getJyId(), new FriendChatMessage(message, sendTimestamp))));
             }
         });
         selectPhotoAlbumLauncher = registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), new ActivityResultCallback<List<Uri>>() {
             @Override
             public void onActivityResult(List<Uri> result) {
-                for (Uri uri: result) {
-                    long timestamp = System.currentTimeMillis();
-                    String fileName = timestamp + ".jpg";
-                    String destinationDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString() + "/" + targetUserInfo.getFriendChatId();
-                    FileUtil.saveChatImageFromUri(ChatActivity.this, uri, fileName, destinationDirectory);
+                for (Uri uri : result) {
+                    Log.d(tag, uri.getScheme());
+                    InputStream inputStream = null;
+                    ByteArrayOutputStream byteArrayOutputStream;
+                    byte[] imgByte;
+                    int imgHeight;
+                    int imgWidth;
                     try {
-                        ChatUtil.addFriendChatMessages(targetUserInfo.getJyId(), new JSONArray().put(new JSONObject((new Gson()).toJson(new FriendChatMessage(MainApplication.getInstance().user.jyId, "FRIENDCHATIMAGEMESSAGE", timestamp)))));
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        byte[] typeByte = "FRIENDCHAT|".getBytes(StandardCharsets.UTF_8);
-                        byte[] sourceByte = (MainApplication.getInstance().user.jyId + "|").getBytes(StandardCharsets.UTF_8);
-                        byte[] targetByte = (targetUserInfo.getJyId() + "|").getBytes(StandardCharsets.UTF_8);
-                        byte[] timestampByte = (System.currentTimeMillis() + "|").getBytes(StandardCharsets.UTF_8);
-                        byte[] friendChatIdByte = (targetUserInfo.getFriendChatId() + "|").getBytes(StandardCharsets.UTF_8);
-                        baos.write(typeByte);
-                        baos.write(sourceByte);
-                        baos.write(targetByte);
-                        baos.write(timestampByte);
-                        baos.write(friendChatIdByte);
-                        if(baos.size() <= 150){
-                            int paddingLength = 150 - baos.size();
-                            byte[] paddingBytes = new byte[paddingLength];
-                            Arrays.fill(paddingBytes, (byte)0);
-                            baos.write(paddingBytes);
-                        }else{
-                            Log.d("长度错误", baos.size() + "");
-                            throw new IOException();
-                        }
-                        Log.d("长度错误", String.valueOf(baos.size()));
+                        inputStream = ChatActivity.this.getContentResolver().openInputStream(uri);
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        inputStream.close();
+                        inputStream = ChatActivity.this.getContentResolver().openInputStream(uri);
+                        imgHeight = bitmap.getHeight();
+                        imgWidth = bitmap.getWidth();
+                        byteArrayOutputStream = new ByteArrayOutputStream();
                         byte[] buffer = new byte[1024];
                         int bytesRead;
-                        FileInputStream fileInputStream = new FileInputStream(destinationDirectory + "/" + fileName);
-                        while((bytesRead = fileInputStream.read(buffer)) != -1){
-                            baos.write(buffer, 0, bytesRead);
+                        while ((bytesRead = inputStream.read(buffer)) != -1){
+                            byteArrayOutputStream.write(buffer, 0, bytesRead);
                         }
-                        byte[] bytes = baos.toByteArray();
-                        Log.d("长度错误", String.valueOf(baos.size()));
-                        ByteString byteString = ByteString.of(bytes);
-                        WebSocketClass.getInstance().getWebSocket().send(byteString);
+                        inputStream.close();
+                        imgByte = byteArrayOutputStream.toByteArray();
+                        SDCardRepository.getInstance().saveChatImg(targetUser.getFriendChatId(), MainApplication.getInstance().getTimeStamp() + "", imgByte);
+                        chatViewModel.insertSendMsgToDB(targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, MainApplication.getInstance().getTimeStamp()));
+                        byte[] byteMsg = ChatUtil.buildByteMsg("FRIENDCHAT", targetUser.getJyId(), targetUser.getFriendChatId(), imgByte);
+                        ByteString byteString = ByteString.of(byteMsg);
+                        WebSocketService.getInstance().sendWSByteStringMsg(byteString);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -431,7 +372,7 @@ public class ChatActivity extends AppCompatActivity {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             setUpItem("moreAction", true);
             Log.d("这里", "trigger");
-        }else{
+        } else {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
 
@@ -466,10 +407,10 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(PermissionUtil.checkGrand(grantResults)){
+        if (PermissionUtil.checkGrand(grantResults)) {
             selectPhotoAlbumLauncher.launch("image/*");
             Log.d("权限2", "success");
-        }else{
+        } else {
             Log.d("权限2", "false");
         }
     }
@@ -497,9 +438,8 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void sendMessage(String message, long sendTimestamp) throws JSONException {
+    private void sendMessage(String message) throws JSONException {
         et_message.setText("");
-        ChatUtil.addFriendChatMessages(targetUserInfo.getJyId(), new JSONArray().put(new JSONObject((new Gson()).toJson(new FriendChatMessage(message, sendTimestamp)))));
     }
 
     private void initMoreActionAnim() {
@@ -509,8 +449,8 @@ public class ChatActivity extends AppCompatActivity {
         moreActionValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(@NonNull ValueAnimator animation) {
-                if (privateChatAdapter.getChatDetailItemArrayList().size() - 1 > 0) {
-                    rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemArrayList().size() - 1);
+                if (privateChatAdapter.getChatMessageList().size() - 1 > 0) {
+                    rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
                     innerTrigger = true;
                 }
                 rv_moreActionContainerParams.height = (int) animation.getAnimatedValue();
@@ -586,14 +526,14 @@ public class ChatActivity extends AppCompatActivity {
             public void onAnimationStart(@NonNull Animator animation) {
                 isWaitThreadRunning = true;
                 iv_moreAction.setClickable(false);
-                if(isMoreActionUp){
+                if (isMoreActionUp) {
                     setSoftInputMode(true);
                     validCalculateVisibleHeight = false;
-                    if(!et_message.hasFocus()){
+                    if (!et_message.hasFocus()) {
                         et_message.requestFocus();
                     }
                     inputMethodManager.showSoftInput(et_message, 0);
-                }else{
+                } else {
                     setSoftInputMode(true);
                     rv_moreActionContainerParams.height = 835;
                     rv_moreActionContainer.setLayoutParams(rv_moreActionContainerParams);
@@ -604,14 +544,14 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(@NonNull Animator animation) {
-                if(isMoreActionUp){
+                if (isMoreActionUp) {
                     rv_moreActionContainerParams.height = 0;
                     validCalculateVisibleHeight = true;
                     setSoftInputMode(false);
                     rv_moreActionContainer.setLayoutParams(rv_moreActionContainerParams);
                     setUpItem("moreAction", false);
                     setUpItem("keyboard", true);
-                }else{
+                } else {
                     setUpItem("moreAction", true);
                 }
                 isWaitThreadRunning = false;
@@ -646,16 +586,17 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void setSoftInputMode(boolean isNothing){
-        if(isNothing){
+    private void setSoftInputMode(boolean isNothing) {
+        if (isNothing) {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             isKeyboardModeNothing = true;
-        }else{
+        } else {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             isKeyboardModeNothing = false;
         }
 
     }
+
     private void closeMoreAction() {
         closeMoreActionValueAnimator.start();
     }
@@ -664,7 +605,8 @@ public class ChatActivity extends AppCompatActivity {
         inputMethodManager.hideSoftInputFromWindow(et_message.getWindowToken(), 0);
         setUpItem("keyboard", false);
     }
-    class MyLinearLayout extends LinearLayoutManager{
+
+    class MyLinearLayout extends LinearLayoutManager {
 
         public MyLinearLayout(Context context) {
             super(context);

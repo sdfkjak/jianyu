@@ -110,12 +110,12 @@ public class PersonInfoActivity extends AppCompatActivity {
                     Bitmap bitmap = (Bitmap)result.getData().getExtras().get("data");
                     String img = ImageUtil.convertBitmapToBase64(bitmap);
                     byte[] imgBytes = ImageUtil.bitmapToByteArray(bitmap);
-                    try {
-                        WebSocketClass.getInstance().getWebSocket().send(BuildMessageUtil.buildByteStringMessage("MODIFYPERSONALINFO", MainApplication.getInstance().user.jyId, null, null, imgBytes));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    WebSocketClass.getInstance().getWebSocket().send(new Gson().toJson(new ModifyPersonalInfo("avatar", img)));
+//                    try {
+//                        WebSocketClass.getInstance().getWebSocket().send(BuildMessageUtil.buildByteStringMessage("MODIFYPERSONALINFO", MainApplication.getInstance().user.jyId, null, null, imgBytes));
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    WebSocketClass.getInstance().getWebSocket().send(new Gson().toJson(new ModifyPersonalInfo("avatar", img)));
                     UserInfo userInfo = oldUserInfo;
                     userInfo.setAvatar(img);
                     personalInfoViewModel.updateUserInfo(userInfo);

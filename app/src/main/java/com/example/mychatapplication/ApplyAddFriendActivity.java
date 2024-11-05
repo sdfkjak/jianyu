@@ -1,22 +1,17 @@
 package com.example.mychatapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 
 
-import com.example.mychatapplication.commomclass.friendapplication.SendFriendRequests;
+import com.example.mychatapplication.model.sendWS.SendFriendRequests;
+import com.example.mychatapplication.model.FriendRequest;
+import com.example.mychatapplication.network.WebSocketService;
 import com.google.gson.Gson;
 
 public class ApplyAddFriendActivity extends AppCompatActivity implements View.OnClickListener{
@@ -34,7 +29,6 @@ public class ApplyAddFriendActivity extends AppCompatActivity implements View.On
     }
     @Override
     public void onClick(View v){
-        Log.d("按下", "sm");
         if(v.getId() == R.id.bt_send){
             String applyMeg = et_applyMeg.getText().toString();
             String remark = et_remark.getText().toString();
@@ -45,8 +39,7 @@ public class ApplyAddFriendActivity extends AppCompatActivity implements View.On
             }else{
                 sendFriendRequests = new SendFriendRequests(target, applyMeg);
             }
-            Gson gson = new Gson();
-            WebSocketClass.getInstance().getWebSocket().send(gson.toJson(sendFriendRequests));
+            WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(sendFriendRequests));
         }
     }
 }

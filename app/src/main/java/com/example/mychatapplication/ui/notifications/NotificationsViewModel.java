@@ -13,18 +13,17 @@ import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoDao;
 import com.example.mychatapplication.database.UserInfoDatabase;
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.model.User;
+import com.example.mychatapplication.repository.SQLiteRepository.UserRepository;
 
 public class NotificationsViewModel extends AndroidViewModel {
-    private UserInfoRepository userInfoRepository;
+    private UserRepository userRepository;
 
-    public LiveData<UserInfo> getCurrentUserInfoLiveData(String jyId) {
-        return userInfoRepository.getCurrentUserInfoLiveData(jyId);
+    public LiveData<User> getUserLiveData(String jyId) {
+        return userRepository.getUserLiveData(jyId);
     }
     public NotificationsViewModel(@NonNull Application application) {
         super(application);
-        userInfoRepository = new UserInfoRepository(application);
-    }
-    void updateUserInfo(UserInfo...userInfos){
-        userInfoRepository.updateUserInfo(userInfos);
+        userRepository = new UserRepository();
     }
 }

@@ -3,11 +3,9 @@ package com.example.mychatapplication.adapter;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.mychatapplication.ui.dashboard.DashboardFragment;
+import com.example.mychatapplication.ui.dashboard.ContactFragment;
 import com.example.mychatapplication.ui.home.HomeFragment;
 import com.example.mychatapplication.ui.notifications.NotificationsFragment;
 
@@ -25,7 +23,7 @@ public class TapPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return new HomeFragment();
             case 1:
-                return new DashboardFragment();
+                return new ContactFragment();
             case 2:
                 return new NotificationsFragment();
             default:

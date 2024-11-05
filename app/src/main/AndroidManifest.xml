@@ -49,7 +49,7 @@
             android:name=".QueryUserDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".AddFriendActivity"
+            android:name=".SearchFriendActivity"
             android:exported="false" />
         <activity
             android:name=".NewFriendActivity"

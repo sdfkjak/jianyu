@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -15,9 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mychatapplication.adapter.ChatItemAdapter;
-import com.example.mychatapplication.commomclass.PrivateChat.FriendChatMessage;
-import com.example.mychatapplication.database.UserInfo;
+import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.databinding.FragmentHomeBinding;
+import com.example.mychatapplication.model.User;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -35,22 +33,21 @@ public class HomeFragment extends Fragment {
         final RecyclerView rv_chatContainer = binding.rvChatContainer;
         rv_chatContainer.setLayoutManager(new LinearLayoutManager(requireContext()));
         chatItemAdapter = new ChatItemAdapter(getContext());
-//        rv_chatContainer.setAdapter(chatItemAdapter);
-        homeViewModel.getFriendChatMessageList().observe(this, new Observer<List<UserInfo>>() {
+
+        homeViewModel.getAllUserLiveData().observe(this, new Observer<List<User>>() {
             @Override
-            public void onChanged(List<UserInfo> userInfos) {
-                if(userInfos != null){
-                    List<UserInfo> hasFriendChatUserInfoList = new ArrayList<>();
-                    for(UserInfo userInfo: userInfos){
-                        if(userInfo.getFriendChatMessages() != null){
-                            FriendChatMessage[] friendChatMessages = new Gson().fromJson(userInfo.getFriendChatMessages(), FriendChatMessage[].class);
-                            if(friendChatMessages.length != 0){
-                                hasFriendChatUserInfoList.add(userInfo);
+            public void onChanged(List<User> userList) {
+                if(userList != null){
+                    List<User> hasFriendChatUserList = new ArrayList<>();
+                    for(User user: userList){
+                        if(user.getFriendChatMessage() != null){
+                            ChatMessage[] chatMessages = new Gson().fromJson(user.getFriendChatMessage(), ChatMessage[].class);
+                            if(chatMessages.length != 0){
+                                hasFriendChatUserList.add(user);
                             }
                         }
                     }
-
-                    chatItemAdapter.setUserInfoList(hasFriendChatUserInfoList);
+                    chatItemAdapter.setUserList(hasFriendChatUserList);
                     rv_chatContainer.setAdapter(chatItemAdapter);
                     chatItemAdapter.notifyDataSetChanged();
                 }

@@ -1,8 +1,8 @@
 package com.example.mychatapplication.adapter;
 
 import android.annotation.SuppressLint;
-import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,21 +13,29 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.R;
-import com.example.mychatapplication.WebSocketClass;
-import com.example.mychatapplication.commomclass.friendapplication.ReceiveFriendRequest;
-import com.example.mychatapplication.commomclass.friendapplication.SendAcceptRequest;
-import com.example.mychatapplication.util.ImageUtil;
+import com.example.mychatapplication.model.FriendRequest;
+import com.example.mychatapplication.model.sendWS.AcceptFriendRequest;
+import com.example.mychatapplication.network.WebSocketService;
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdapter.FriendRequestViewHolder> {
-    private ArrayList<ReceiveFriendRequest> receiveFriendRequestList;
+    private ArrayList<FriendRequest> friendRequestArrayList;
+    private final Context context;
+    public FriendRequestAdapter(Context context){
+        this.context = context;
+    }
 
-    public void setReceiveFriendRequestList(ArrayList<ReceiveFriendRequest> receiveFriendRequestList) {
-        this.receiveFriendRequestList = receiveFriendRequestList;
+    public void setReceiveFriendRequestList(ArrayList<FriendRequest> friendRequestList) {
+        this.friendRequestArrayList = friendRequestList;
     }
 
     @NonNull
@@ -40,24 +48,24 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
 
     @Override
     public void onBindViewHolder(@NonNull FriendRequestViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        ReceiveFriendRequest receiveFriendRequest = receiveFriendRequestList.get(position);
-        if(receiveFriendRequest.getCommonUserInfo().getAvatarBytes() != null){
-            holder.iv_avatar.setImageBitmap(BitmapFactory.decodeByteArray(receiveFriendRequest.getCommonUserInfo().getAvatarBytes(), 0, receiveFriendRequest.getCommonUserInfo().getAvatarBytes().length));
-        }
-        if(receiveFriendRequest.getMode().equals("passive")){
+        FriendRequest friendRequest = friendRequestArrayList.get(position);
+        RequestBuilder<Drawable> builder = Glide.with(context).load(new File(new File(context.getExternalFilesDir(null), "avatar"), friendRequest.getUser().getJyId()));
+        RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
+        builder.apply(options).into(holder.iv_avatar);
+        if(friendRequest.getMode().equals("passive")){
             holder.iv_toward.setVisibility(View.INVISIBLE);
         }else{
             holder.iv_toward.setVisibility(View.VISIBLE);
         }
-        if(receiveFriendRequest.getFriendRequestMessageArrayList() != null){
-            holder.tv_applyMsg.setText(receiveFriendRequest.getFriendRequestMessageArrayList().get(-1).getContent());
+        if(friendRequest.getMessageArrayList().size() != 0){
+            holder.tv_applyMsg.setText(friendRequest.getMessageArrayList().get(-1));
         }
-        holder.tv_niceName.setText(receiveFriendRequest.getCommonUserInfo().getNickname());
+        holder.tv_niceName.setText(friendRequest.getUser().getNickname());
         holder.bt_add.setVisibility(View.VISIBLE);
         holder.bt_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WebSocketClass.getInstance().getWebSocket().send((new Gson()).toJson(new SendAcceptRequest(receiveFriendRequestList.get(position).getFriendRequestsId(), MainApplication.getInstance().user.jyId, receiveFriendRequest.getCommonUserInfo().getJyId())));
+                WebSocketService.getInstance().sendWSStringMsg((new Gson()).toJson(new AcceptFriendRequest(friendRequest.getFriendRequestsId(), MainApplication.getInstance().user.jyId, friendRequest.getUser().getJyId())));
                 holder.bt_add.setVisibility(View.GONE);
                 holder.tv_hasAdd.setVisibility(View.VISIBLE);
             }
@@ -66,7 +74,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
 
     @Override
     public int getItemCount() {
-        return receiveFriendRequestList.size();
+        return friendRequestArrayList.size();
     }
 
     public static class FriendRequestViewHolder extends RecyclerView.ViewHolder{

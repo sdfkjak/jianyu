@@ -1,4 +1,4 @@
-package com.example.mychatapplication.commomclass.PrivateChat;
+package com.example.mychatapplication.model;
 
 import com.example.mychatapplication.MainApplication;
 
@@ -7,7 +7,7 @@ public class FriendChat {
     private String friendChatId;
     private String source = MainApplication.getInstance().user.jyId;
     private String target;
-    private FriendChatMessage friendChatMessage;
+    private ChatMessage chatMessage;
 
     public String getFriendChatId() {
         return friendChatId;
@@ -17,13 +17,13 @@ public class FriendChat {
         return target;
     }
 
-    public FriendChatMessage getFriendChatMessage() {
-        return friendChatMessage;
+    public ChatMessage getFriendChatMessage() {
+        return chatMessage;
     }
 
-    public FriendChat(String friendChatId, String target, FriendChatMessage friendChatMessage) {
+    public FriendChat(String friendChatId, String target, ChatMessage chatMessage) {
         this.friendChatId = friendChatId;
         this.target = target;
-        this.friendChatMessage = friendChatMessage;
+        this.chatMessage = chatMessage;
     }
 }

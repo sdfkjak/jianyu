@@ -2,9 +2,9 @@ package com.example.mychatapplication.adapter;
 
 import static com.example.mychatapplication.util.Pinyin4jUtils.getFirstPinYin;
 
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.util.DisplayMetrics;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,33 +15,47 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.NewFriendActivity;
 import com.example.mychatapplication.R;
 import com.example.mychatapplication.UserDetailActivity;
-import com.example.mychatapplication.database.UserInfo;
-import com.example.mychatapplication.util.ImageUtil;
+import com.example.mychatapplication.model.User;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
-    private List<UserInfo> userInfos = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
     private final static String[] commonItem = {"新的朋友", "群聊", "标签", "公众号"};
+
+    private Context context;
+
+    public ContactAdapter(Context context) {
+        this.context = context;
+    }
+
     private List<AllContactItem> allContactItem = new ArrayList<>();
-    public void setUserInfos(List<UserInfo> userInfos) {
-        this.userInfos = userInfos;
+
+    public void setUserList(List<User> userList) {
+        this.userList = userList;
         allContactItem.clear();
         initAllContactItem();
     }
-    private void initAllContactItem(){
+
+    private void initAllContactItem() {
         for (int i = 0; i < commonItem.length; i++) {
             allContactItem.add(new AllContactItem("commonItem", null));
         }
 
         List<String> characters = new ArrayList<>();
-        for (int i = 0; i < userInfos.size(); i++) {
-            String FirstPinYin = getFirstPinYin(userInfos.get(i).getNickname());
-            if(!characters.contains(FirstPinYin)){
+        for (int i = 0; i < userList.size(); i++) {
+            String FirstPinYin = getFirstPinYin(userList.get(i).getNickname());
+            if (!characters.contains(FirstPinYin)) {
                 characters.add(FirstPinYin);
                 Log.d("bubaohan", FirstPinYin);
             }
@@ -51,15 +65,16 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         for (int i = 0; i < characters.size(); i++) {
             char currentChar = characters.get(i).toCharArray()[0];
             allContactItem.add(new AllContactItem("character", currentChar));
-            for (UserInfo userInfo: userInfos) {
-                if(getFirstPinYin(userInfo.getNickname()).equals(String.valueOf(currentChar))){
-                    allContactItem.add(new AllContactItem("contact", userInfo));
+            for (User user : userList) {
+                if (getFirstPinYin(user.getNickname()).equals(String.valueOf(currentChar))) {
+                    allContactItem.add(new AllContactItem("contact", user));
                 }
             }
         }
     }
-    public List<UserInfo> getUserInfos() {
-        return userInfos;
+
+    public List<User> getUserList() {
+        return userList;
     }
 
     @NonNull
@@ -67,7 +82,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     public ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view;
-        switch (viewType){
+        switch (viewType) {
             case 0:
                 view = layoutInflater.inflate(R.layout.item_character, parent, false);
                 break;
@@ -85,13 +100,13 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     @Override
     public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
         AllContactItem contactItem = allContactItem.get(position);
-        switch (contactItem.getType()){
+        switch (contactItem.getType()) {
             case "character":
                 holder.tv_character.setText(String.valueOf(contactItem.getCharacter()));
                 break;
             case "commonItem":
                 holder.itemView.setBackground(holder.itemView.getResources().getDrawable(R.color.white, null));
-                switch (position){
+                switch (position) {
                     case 0:
                         holder.iv_avatar.setImageDrawable(holder.itemView.getResources().getDrawable(R.drawable.new_friend, null));
                         holder.tv_nickname.setText(commonItem[0]);
@@ -122,20 +137,22 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 break;
             case "contact":
                 holder.itemView.setBackground(holder.itemView.getResources().getDrawable(R.color.white, null));
-                UserInfo userInfo = allContactItem.get(position).getUserInfo();
-                holder.iv_avatar.setImageBitmap(ImageUtil.convertBase64ToBitmap(userInfo.getAvatar()));
-                holder.tv_nickname.setText(userInfo.getNickname());
+                User user = allContactItem.get(position).getUser();
+                RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, user.getJyId()));
+                RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
+                builder.apply(options).into(holder.iv_avatar);
+                holder.tv_nickname.setText(user.getNickname());
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent  = new Intent(v.getContext(), UserDetailActivity.class);
-                        intent.putExtra("jyId", userInfo.getJyId());
+                        Intent intent = new Intent(v.getContext(), UserDetailActivity.class);
+                        intent.putExtra("jyId", user.getJyId());
                         v.getContext().startActivity(intent);
                     }
                 });
                 Log.d("长度", String.valueOf(allContactItem.size()));
                 Log.d("长度", String.valueOf(position));
-                if(allContactItem.size() - 1 == position){
+                if (allContactItem.size() - 1 == position) {
                     holder.divider.setVisibility(View.GONE);
                 }
         }
@@ -148,7 +165,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
     @Override
     public int getItemViewType(int position) {
-        switch (allContactItem.get(position).getType()){
+        switch (allContactItem.get(position).getType()) {
             case "character":
                 return 0;
             case "commonItem":
@@ -158,10 +175,11 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         }
     }
 
-    public static class ContactViewHolder extends RecyclerView.ViewHolder{
+    public static class ContactViewHolder extends RecyclerView.ViewHolder {
         public ImageView iv_avatar;
         public TextView tv_nickname, tv_character;
         private View divider;
+
         public ContactViewHolder(@NonNull View itemView) {
             super(itemView);
             iv_avatar = itemView.findViewById(R.id.iv_avatar);
@@ -170,26 +188,27 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             tv_character = itemView.findViewById(R.id.tv_character);
         }
     }
-    class AllContactItem{
+
+    class AllContactItem {
         private String type;
-        private UserInfo userInfo;
+        private User user;
         private char character;
 
         public String getType() {
             return type;
         }
 
-        public UserInfo getUserInfo() {
-            return userInfo;
+        public User getUser() {
+            return user;
         }
 
         public char getCharacter() {
             return character;
         }
 
-        public AllContactItem(String type, UserInfo userInfo) {
+        public AllContactItem(String type, User user) {
             this.type = type;
-            this.userInfo = userInfo;
+            this.user = user;
         }
 
         public AllContactItem(String type, char character) {
