@@ -13,21 +13,8 @@ public class FriendRequest {
 
     private String sendMessage;
     @SerializedName("message")
-    private ArrayList<String> messageArrayList;
+    private ArrayList<ChatMessage> messageArrayList;
 
-    public FriendRequest(String friendRequestsId, String mode, User user, String message) {
-        this.friendRequestsId = friendRequestsId;
-        this.mode = mode;
-        this.user = user;
-        this.sendMessage = message;
-    }
-
-    public FriendRequest(String friendRequestsId, String mode, User user, ArrayList<String> messageArrayList) {
-        this.friendRequestsId = friendRequestsId;
-        this.mode = mode;
-        this.user = user;
-        this.messageArrayList = messageArrayList;
-    }
 
     public String getFriendRequestsId() {
         return friendRequestsId;
@@ -53,19 +40,11 @@ public class FriendRequest {
         this.user = user;
     }
 
-    public String getSendMessage() {
-        return sendMessage;
-    }
-
-    public void setSendMessage(String sendMessage) {
-        this.sendMessage = sendMessage;
-    }
-
-    public ArrayList<String> getMessageArrayList() {
+    public ArrayList<ChatMessage> getMessageArrayList() {
         return messageArrayList;
     }
 
-    public void setMessageArrayList(ArrayList<String> messageArrayList) {
+    public void setMessageArrayList(ArrayList<ChatMessage> messageArrayList) {
         this.messageArrayList = messageArrayList;
     }
 }

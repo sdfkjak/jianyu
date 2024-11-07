@@ -63,9 +63,6 @@ public class WebSocketService {
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 super.onMessage(webSocket, text);
-                if(MainApplication.getInstance().user != null){
-                    MainApplication.getInstance().startTime();
-                }
                 Log.d(tag, "接收" + text);
                 try {
                     HashMap<String, String> result = paresStringMsg(text);
@@ -85,16 +82,23 @@ public class WebSocketService {
             @Override
             public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 super.onClosing(webSocket, code, reason);
+                Log.d("WebSocket 连接正在关闭 onClosing：", reason);
             }
 
             @Override
             public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 super.onClosed(webSocket, code, reason);
+                Log.d("WebSocket 连接已经关闭 onClosing：", reason);
             }
 
             @Override
             public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
+                if (response != null) {
+                    Log.d("WebSocket 连接失败 onFailure：", response.message());
+                }
+                Log.d( "WebSocket 连接失败异常原因：", t.getMessage());
+                WebSocketService.getInstance().webSocket = okHttpClient.newWebSocket(request, createWebSocketListener());
             }
         };
     }
@@ -105,7 +109,7 @@ public class WebSocketService {
     }
 
     public void sendWSByteStringMsg(ByteString byteString) {
-        Log.d(tag, "发送ByteString" + byteString);
+        Log.d(tag, "发送ByteString");
         webSocket.send(byteString);
     }
 

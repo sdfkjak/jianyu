@@ -2,12 +2,22 @@ package com.example.mychatapplication.model;
 
 import com.example.mychatapplication.MainApplication;
 
+import java.util.ArrayList;
+
 public class FriendChat {
     private String type = "FRIENDCHAT";
     private String friendChatId;
     private String source = MainApplication.getInstance().user.jyId;
     private String target;
     private ChatMessage chatMessage;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public String getFriendChatId() {
         return friendChatId;

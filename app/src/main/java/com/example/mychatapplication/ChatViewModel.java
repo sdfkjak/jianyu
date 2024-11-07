@@ -56,7 +56,7 @@ public class ChatViewModel extends AndroidViewModel {
     }
 
     public void addChatDetailItemList(List<ChatMessage> chatMessageList) {
-        if (chatMessageList != null) {
+        if (chatMessageList != null && chatMessageList.size() != 0) {
             if(chatDetailItemList == null || chatDetailItemList.size() == 0){
                 chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(0).getTimestamp()));
                 for (int i = 0; i < chatMessageList.size(); i++) {

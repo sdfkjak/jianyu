@@ -27,6 +27,9 @@ public class NetWorkViewModel{
     public void insertUser(User user){
         userRepository.insertUser(user);
     }
+    public void updateFriendChatMessage(String jyId, String friendChatMessage){
+        userRepository.updateFriendChatMessage(jyId, friendChatMessage);
+    }
     public void updateUser(String jyId, String sex, String area, String nickname, String friendChatId){ userRepository.updateUser(jyId, sex, area, nickname, friendChatId); }
     public void saveAvatar(String fileName, byte[] bytes){
         sdCardRepository.saveAvatar(fileName, bytes);
@@ -34,5 +37,9 @@ public class NetWorkViewModel{
 
     public void saveCache(String fileName, byte[] bytes){
         sdCardRepository.saveCache(fileName, bytes);
+    }
+
+    public void saveChatImg(String chatId, String fileName, byte[] bytes) {
+        sdCardRepository.saveChatImg(chatId, fileName, bytes);
     }
 }

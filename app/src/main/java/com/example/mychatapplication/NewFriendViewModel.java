@@ -27,9 +27,22 @@ public class NewFriendViewModel extends ViewModel {
         return messageHub.getWSFriendApplicationInitLiveData();
     }
 
+
+    public LiveData<FriendRequest> getWSFriendApplication(){
+        return messageHub.getWSFriendApplicationLiveData();
+    }
     public void addFriendRequest(FriendRequest[] friendRequests){
         for (FriendRequest friendRequest : friendRequests) {
-            friendRequestArrayListMutableLiveData.getValue().add(friendRequest);
+            boolean isSame = false;
+            for (FriendRequest friendRequest1: friendRequestArrayListMutableLiveData.getValue()) {
+                if (friendRequest.getUser().getJyId().equals(friendRequest1.getUser().getJyId())) {
+                    isSame = true;
+                    break;
+                }
+            }
+            if(!isSame){
+                friendRequestArrayListMutableLiveData.getValue().add(friendRequest);
+            }
         }
         friendRequestArrayListMutableLiveData.postValue(friendRequestArrayListMutableLiveData.getValue());
     }

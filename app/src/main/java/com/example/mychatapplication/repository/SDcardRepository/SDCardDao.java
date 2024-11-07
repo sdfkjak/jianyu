@@ -1,5 +1,7 @@
 package com.example.mychatapplication.repository.SDcardRepository;
 
+import android.util.Log;
+
 import com.example.mychatapplication.MainApplication;
 
 import java.io.File;
@@ -56,6 +58,8 @@ public class SDCardDao {
         if(!((new File(MainApplication.getInstance().chatFolder, chatId)).exists())){
             createFolder(MainApplication.getInstance().chatFolder, chatId);
         }
+
+        Log.d("图片存在吗saveChatImg", new File(new File(MainApplication.getInstance().chatFolder, chatId), fileName + "").getAbsolutePath());
         File chatImgFile = new File(new File(MainApplication.getInstance().chatFolder, chatId), fileName);
         try {
             FileOutputStream fos = new FileOutputStream(chatImgFile);

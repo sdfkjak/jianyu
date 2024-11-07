@@ -112,7 +112,13 @@ public class RegisteredActivity extends AppCompatActivity implements View.OnClic
                 avatar.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 byte[] avatarBytes = baos.toByteArray();
                 builder.addFormDataPart("avatar", "avatar.png", RequestBody.create(avatarBytes, MediaType.parse("image/png")));
+            }else{
+                Bitmap defaultAvatar = BitmapFactory.decodeResource(RegisteredActivity.this.getResources(), R.drawable.defaultavater);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                defaultAvatar.compress(Bitmap.CompressFormat.PNG, 0, byteArrayOutputStream);
+                builder.addFormDataPart("avatar", "avatar.png", RequestBody.create(byteArrayOutputStream.toByteArray(), MediaType.parse("image/png")));
             }
+
             RequestBody requestBody = builder.build();
             OkHttpUtil.getInstance().sendOkHttpPostRequest(MainApplication.regUrl,requestBody, new Callback() {
                 @Override

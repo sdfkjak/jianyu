@@ -40,6 +40,8 @@ import android.widget.ImageView;
 
 import com.example.mychatapplication.adapter.MoreActionAdapter;
 import com.example.mychatapplication.adapter.PrivateChatAdapter;
+import com.example.mychatapplication.memory.ChatImageCacheManager;
+import com.example.mychatapplication.model.ChatImage;
 import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.model.FriendChat;
 import com.example.mychatapplication.model.User;
@@ -55,6 +57,7 @@ import org.json.JSONException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -107,6 +110,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        ChatImageCacheManager.getInstance().flush();
         firstIn = true;
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey("isKeyboardUp")) {
@@ -185,8 +189,6 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChanged(User user) {
                 if (user != null) {
-                    if (user.getFriendChatMessage() != null)
-                        Log.d(tag, user.getFriendChatMessage());
                     //这个if就当初始化
                     if (targetUser == null) {
                         targetUser = user;
@@ -199,14 +201,17 @@ public class ChatActivity extends AppCompatActivity {
                     if (user.getFriendChatMessage() != null) {
                         ChatMessage[] totalChatMessages = (new Gson()).fromJson(user.getFriendChatMessage(), ChatMessage[].class);
                         int addMessageLength = totalChatMessages.length - oldChatMessageLength;
-                        ChatMessage[] newChatMessages = new ChatMessage[addMessageLength];
-                        System.arraycopy(totalChatMessages, oldChatMessageLength, newChatMessages, 0, totalChatMessages.length - oldChatMessageLength);
-                        oldChatMessageLength = oldChatMessageLength + addMessageLength;
-                        chatViewModel.addChatDetailItemList(Arrays.asList(newChatMessages));
-                        privateChatAdapter.setChatDetailItemList(chatViewModel.getChatDetailItemList());
-                        privateChatAdapter.notifyItemRangeInserted(chatViewModel.getChatDetailItemList().size() - 1, chatViewModel.getAddChatDetailItemCount());
+                        if(addMessageLength > 0){
+                            ChatMessage[] newChatMessages = new ChatMessage[addMessageLength];
+                            System.arraycopy(totalChatMessages, oldChatMessageLength, newChatMessages, 0, totalChatMessages.length - oldChatMessageLength);
+                            oldChatMessageLength = oldChatMessageLength + addMessageLength;
+                            chatViewModel.addChatDetailItemList(Arrays.asList(newChatMessages));
+                            privateChatAdapter.setChatDetailItemList(chatViewModel.getChatDetailItemList());
+                            privateChatAdapter.notifyItemRangeInserted(chatViewModel.getChatDetailItemList().size() - 1, chatViewModel.getAddChatDetailItemCount());
 //                        rv_chat.setItemViewCacheSize(privateChatAdapter.getChatMessageList().size());
-                        rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
+                            rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
+                        }
+
                     }
                 }
             }
@@ -251,7 +256,6 @@ public class ChatActivity extends AppCompatActivity {
         et_message.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                Log.d("触发", "触发");
                 if (!innerTrigger && !isMoreActionClosing && !isMoreActionUpping && !isWaitThreadRunning) {
                     Rect rect = new Rect();
                     getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
@@ -266,7 +270,6 @@ public class ChatActivity extends AppCompatActivity {
                             softKeyboardHeight = windowHeight - height;
                             setUpItem("keyboard", true);
                         } else {
-                            Log.d("kkkkkkkkcuowudian", String.valueOf(height));
                             if (!isMoreActionUp && isKeyboardUp) {
                                 setUpItem("all", false);
                             }
@@ -274,12 +277,10 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     if(privateChatAdapter != null){
                         if (privateChatAdapter.getChatDetailItemList().size() - 1 > 0 && windowHeight != height) {
-                            Log.d("触发", "触发1");
                             rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
                             innerTrigger = true;
                         }
                         if (privateChatAdapter.getChatDetailItemList().size() - 1 > 0 && isFirstIn) {
-                            Log.d("触发", "触发1");
                             rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
                             isFirstIn = false;
                             innerTrigger = true;
@@ -299,30 +300,23 @@ public class ChatActivity extends AppCompatActivity {
         bt_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chatViewModel.setWaitForSend(true);
-                WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new TimeStamp()));
-            }
-        });
-        chatViewModel.getWSResponseTimestamp().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                if (chatViewModel.isWaitForSend()) {
-                    chatViewModel.setWaitForSend(false);
-                    String message = et_message.getText().toString();
-                    try {
-                        sendMessage(message);
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, message, Long.parseLong(s)));
-                    WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
-                    chatViewModel.insertSendMsgToDB(chatTargetJyId, new ChatMessage(MainApplication.getInstance().user.jyId, message, Long.parseLong(s)));
+                String message = et_message.getText().toString();
+                try {
+                    sendMessage(message);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
+                long currentTimestamp = MainApplication.getInstance().getTimeStamp();
+                FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, message, currentTimestamp));
+                WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
+                chatViewModel.insertSendMsgToDB(chatTargetJyId, new ChatMessage(MainApplication.getInstance().user.jyId, message, currentTimestamp));
             }
         });
+
         selectPhotoAlbumLauncher = registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), new ActivityResultCallback<List<Uri>>() {
             @Override
             public void onActivityResult(List<Uri> result) {
+                long currentTimestamp = MainApplication.getInstance().getTimeStamp();
                 for (Uri uri : result) {
                     Log.d(tag, uri.getScheme());
                     InputStream inputStream = null;
@@ -345,18 +339,19 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         inputStream.close();
                         imgByte = byteArrayOutputStream.toByteArray();
-                        SDCardRepository.getInstance().saveChatImg(targetUser.getFriendChatId(), MainApplication.getInstance().getTimeStamp() + "", imgByte);
-                        chatViewModel.insertSendMsgToDB(targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, MainApplication.getInstance().getTimeStamp()));
+                        ChatImageCacheManager.getInstance().addToCache(new ChatImage(MainApplication.getInstance().user.jyId, currentTimestamp, imgByte));
+                        SDCardRepository.getInstance().saveChatImg(targetUser.getJyId(), currentTimestamp + "", imgByte);
+                        chatViewModel.insertSendMsgToDB(targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, currentTimestamp));
                         byte[] byteMsg = ChatUtil.buildByteMsg("FRIENDCHAT", targetUser.getJyId(), targetUser.getFriendChatId(), imgByte);
                         ByteString byteString = ByteString.of(byteMsg);
+                        FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, currentTimestamp));
+                        WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
                         WebSocketService.getInstance().sendWSByteStringMsg(byteString);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
 
                 }
-
-                Log.d("选了几张", String.valueOf(result.size()));
             }
         });
     }
@@ -371,7 +366,6 @@ public class ChatActivity extends AppCompatActivity {
         } else if (isMoreActionUp) {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             setUpItem("moreAction", true);
-            Log.d("这里", "trigger");
         } else {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
@@ -394,7 +388,6 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.d("kkkkkkkkkkkkkkkk", String.valueOf(isMoreActionUp) + String.valueOf(isKeyboardUp));
         if (isMoreActionUp || isKeyboardUp) {
             closeMoreAction();
             setSoftInputMode(false);
@@ -409,14 +402,11 @@ public class ChatActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (PermissionUtil.checkGrand(grantResults)) {
             selectPhotoAlbumLauncher.launch("image/*");
-            Log.d("权限2", "success");
         } else {
-            Log.d("权限2", "false");
         }
     }
 
     private void setUpItem(String item, boolean isChoose) {
-        Log.d("kkkkkkkk", String.valueOf(isKeyboardUp) + String.valueOf(isMoreActionUp) + item + String.valueOf(isChoose));
         if (item.equals("keyboard")) {
             if (isChoose) {
                 isKeyboardUp = true;
@@ -472,7 +462,6 @@ public class ChatActivity extends AppCompatActivity {
 
                 setSoftInputMode(false);
                 setUpItem("moreAction", true);
-                Log.d("sssssssssssssssss后", String.valueOf(isKeyboardUp) + String.valueOf(isMoreActionUp));
             }
 
             @Override
@@ -556,7 +545,6 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 isWaitThreadRunning = false;
                 iv_moreAction.setClickable(true);
-                Log.d("sssssssssssssssss后", String.valueOf(isKeyboardUp) + String.valueOf(isMoreActionUp));
             }
 
             @Override
@@ -572,7 +560,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void openMoreActionView() {
-        Log.d("sssssssssssssssss前", String.valueOf(isKeyboardUp) + String.valueOf(isMoreActionUp));
         if (!isKeyboardUp && !isMoreActionUp) {
             //两个都没弹起来
             moreActionValueAnimator.start();
@@ -624,7 +611,6 @@ public class ChatActivity extends AppCompatActivity {
         protected void calculateExtraLayoutSpace(@NonNull RecyclerView.State state, @NonNull int[] extraLayoutSpace) {
             super.calculateExtraLayoutSpace(state, extraLayoutSpace);
             int position = 0;
-            Log.d("位置a", String.valueOf(extraLayoutSpace.length));
             for (int i = 0; i < extraLayoutSpace.length; i++) {
                 extraLayoutSpace[i] = 500;
             }

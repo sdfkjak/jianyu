@@ -35,6 +35,7 @@ public class MainApplication extends Application {
 
     private long serverTimestamp;
     private long intervalTimestamp;
+    public boolean isStartTime = false;
     private MessageHub messageHub;
 
     public User user;
@@ -92,6 +93,7 @@ public class MainApplication extends Application {
     }
 
     public void startTime(){
+        isStartTime = true;
         WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new TimeStamp()));
         messageHub = MessageHub.getInstance();
         messageHub.getWSResponseTimestamp().observeForever(new Observer<String>() {

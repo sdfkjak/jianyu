@@ -69,7 +69,12 @@ public class NewFriendActivity extends AppCompatActivity {
                 friendRequestAdapter.notifyDataSetChanged();
             }
         });
-
+        newFriendViewModel.getWSFriendApplication().observe(this, new Observer<FriendRequest>() {
+            @Override
+            public void onChanged(FriendRequest friendRequest) {
+                newFriendViewModel.addFriendRequest(new FriendRequest[]{friendRequest});
+            }
+        });
         newFriendViewModel.getWSFriendApplicationInit().observe(this, new Observer<FriendRequest[]>() {
             @Override
             public void onChanged(FriendRequest[] friendRequests) {

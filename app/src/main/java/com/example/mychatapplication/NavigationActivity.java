@@ -40,6 +40,9 @@ public class NavigationActivity extends AppCompatActivity {
         vp2_fragments.setAdapter(tapPagerAdapter);
         setSupportActionBar(tb_head);
         setToolbarTitleCenter(tb_head);
+        if(MainApplication.getInstance().user != null && MainApplication.getInstance().user.jyId != null && !MainApplication.getInstance().isStartTime){
+            MainApplication.getInstance().startTime();
+        }
         rg_title.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {

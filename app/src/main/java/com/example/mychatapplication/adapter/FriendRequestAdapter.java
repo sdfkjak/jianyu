@@ -58,7 +58,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
             holder.iv_toward.setVisibility(View.VISIBLE);
         }
         if(friendRequest.getMessageArrayList().size() != 0){
-            holder.tv_applyMsg.setText(friendRequest.getMessageArrayList().get(-1));
+            holder.tv_applyMsg.setText(friendRequest.getMessageArrayList().get(friendRequestArrayList.size() - 1).getContent());
         }
         holder.tv_niceName.setText(friendRequest.getUser().getNickname());
         holder.bt_add.setVisibility(View.VISIBLE);
