@@ -29,7 +29,6 @@ public class NotificationsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         notificationsViewModel = new ViewModelProvider(this).get(NotificationsViewModel.class);
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
-        Log.d(tag, "aaaaaaaaaaaaaaaaaa");
 
         mineAdapter = new MineAdapter(getActivity());
         rv_container = binding.rvContainer;

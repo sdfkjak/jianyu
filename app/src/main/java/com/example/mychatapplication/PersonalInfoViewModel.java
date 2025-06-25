@@ -8,18 +8,27 @@ import androidx.lifecycle.LiveData;
 
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.model.User;
+import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
+import com.example.mychatapplication.repository.SQLiteRepository.UserRepository;
 
 public class PersonalInfoViewModel extends AndroidViewModel {
-    private UserInfoRepository userInfoRepository;
+    private UserRepository userRepository;
+    private SDCardRepository sdCardRepository;
 
     public PersonalInfoViewModel(@NonNull Application application) {
         super(application);
-        this.userInfoRepository = new UserInfoRepository(application);
+        this.userRepository = new UserRepository();
+        this.sdCardRepository = SDCardRepository.getInstance();
     }
-    public LiveData<UserInfo> getCurrentUserInfoLiveData(String jyId) {
-        return userInfoRepository.getCurrentUserInfoLiveData(jyId);
+    public LiveData<User> getUserLiveData(String jyId) {
+        return userRepository.getUserLiveData(jyId);
     }
-    public void updateUserInfo(UserInfo... userInfos){
-        userInfoRepository.updateUserInfo(userInfos);
+
+    public void saveAvatar(String fileName, byte[] bytes){
+        sdCardRepository.saveAvatar(fileName, bytes);
     }
+//    public void updateUserInfo(UserInfo... userInfos){
+//        userInfoRepository.updateUserInfo(userInfos);
+//    }
 }

@@ -23,7 +23,7 @@ import com.example.mychatapplication.model.sendWS.SearchUser;
 import com.example.mychatapplication.network.WebSocketService;
 import com.google.gson.Gson;
 
-public class SearchFriendActivity extends AppCompatActivity{
+public class SearchFriendActivity extends BaseActivity{
     private EditText et_search;
     private Button bt_cancel;
     private ConstraintLayout cl_result;

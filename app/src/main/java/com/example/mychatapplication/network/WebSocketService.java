@@ -41,8 +41,9 @@ public class WebSocketService {
                 .url(MainApplication.wbUrl)
                 .build();
         WebSocketListener listener = createWebSocketListener();
-        webSocket = okHttpClient.newWebSocket(request, listener);
         netWorkViewModel = NetWorkViewModel.getInstance();
+        webSocket = okHttpClient.newWebSocket(request, listener);
+
     }
 
     public synchronized static WebSocketService getInstance() {

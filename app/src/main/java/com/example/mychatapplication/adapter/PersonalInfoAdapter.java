@@ -22,9 +22,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.PersonInfoActivity;
 import com.example.mychatapplication.R;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,19 +55,9 @@ public class PersonalInfoAdapter extends RecyclerView.Adapter<PersonalInfoAdapte
         PersonalInfo personalInfo = personalInfoList.get(position);
         holder.itemView.setBackgroundResource(R.color.white);
         holder.tv_itemName.setText(personalInfo.getItemName());
-        if(personalInfo.getItemInfo() != null){
+        if(personalInfo.getItemInfo() != null && personalInfo.getItemName() != R.string.avatar){
             holder.tv_itemInfo.setVisibility(View.VISIBLE);
             holder.tv_itemInfo.setText(personalInfo.getItemInfo());
-        } else if (personalInfo.getImg() != null) {
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) holder.iv_img.getLayoutParams();
-            params.height = 200;
-            params.width = 200;
-            holder.iv_img.setLayoutParams(params);
-            holder.iv_img.setVisibility(View.VISIBLE);
-//            holder.iv_img.setImageBitmap(personalInfo.getImg());
-            RequestBuilder<Drawable> builder = Glide.with(context).load(personalInfo.getImg());
-            RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
-            builder.apply(options).into(holder.iv_img);
         } else if (personalInfo.getQRCode() == R.drawable.baseline_qr_code_24) {
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) holder.iv_img.getLayoutParams();
             params.height = 100;
@@ -85,6 +77,14 @@ public class PersonalInfoAdapter extends RecyclerView.Adapter<PersonalInfoAdapte
         }
 
         if(personalInfo.getItemName() == R.string.avatar){
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) holder.iv_img.getLayoutParams();
+            params.height = 200;
+            params.width = 200;
+            holder.iv_img.setLayoutParams(params);
+            holder.iv_img.setVisibility(View.VISIBLE);
+            RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, MainApplication.getInstance().user.jyId));
+            RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
+            builder.apply(options).into(holder.iv_img);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

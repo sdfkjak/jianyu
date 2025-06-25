@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager2.widget.ViewPager2;
 
-public class NavigationActivity extends AppCompatActivity {
+public class NavigationActivity extends BaseActivity {
     private ActivityNavigationBinding binding;
     private Toolbar tb_head;
     private ViewPager2 vp2_fragments;
@@ -41,6 +41,7 @@ public class NavigationActivity extends AppCompatActivity {
         setSupportActionBar(tb_head);
         setToolbarTitleCenter(tb_head);
         if(MainApplication.getInstance().user != null && MainApplication.getInstance().user.jyId != null && !MainApplication.getInstance().isStartTime){
+            Log.d("服务器时间","开始计时");
             MainApplication.getInstance().startTime();
         }
         rg_title.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

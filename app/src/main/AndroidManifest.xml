@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 读写外部存储 -->
@@ -60,13 +64,14 @@
             android:label="@string/title_activity_navigation" />
         <activity
             android:name=".LoginActivity"
-            android:exported="false"></activity>
+            android:exported="false"/>
         <activity
             android:name=".RegisteredActivity"
             android:exported="false" />
         <activity
             android:name=".LaunchActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/SplashScreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

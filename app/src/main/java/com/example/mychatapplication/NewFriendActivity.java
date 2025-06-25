@@ -22,7 +22,7 @@ import com.example.mychatapplication.util.ToolbarUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewFriendActivity extends AppCompatActivity {
+public class NewFriendActivity extends BaseActivity {
     private Toolbar tb_head;
     private RecyclerView rv_friendRequests;
     private LeftImgButton bt_searchAccount;

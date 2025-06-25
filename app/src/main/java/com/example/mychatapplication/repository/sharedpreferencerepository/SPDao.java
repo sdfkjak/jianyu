@@ -28,14 +28,31 @@ public class SPDao {
         SharedPreferences.Editor editor = sharedPreference().edit();
         editor.putBoolean("isLogin", isLogin);
         editor.putString("jyid", jyId);
-        editor.apply();
-        return true;
+        editor.commit();
+        return isLogin;
     }
 
+    public boolean synSaveLoginMsg(boolean isLogin, String jyId) {
+        SharedPreferences.Editor editor = sharedPreference().edit();
+        editor.putBoolean("isLogin", isLogin);
+        editor.putString("jyid", jyId);
+        editor.commit();
+        return isLogin;
+    }
     public HashMap<String, String> getLoginMsg() {
         HashMap<String, String> result = new HashMap<>();
         result.put("isLogin", String.valueOf(sharedPreference().getBoolean("isLogin", false)));
         result.put("jyid", sharedPreference().getString("jyid", ""));
         return result;
+    }
+
+    public float getSoftKeyboardHeight(){
+        return sharedPreference().getFloat("softKeyboardHeight", 0.0f);
+    }
+
+    public void setSoftKeyboardHeight(float height){
+        SharedPreferences.Editor editor = sharedPreference().edit();
+        editor.putFloat("softKeyboardHeight", height);
+        editor.apply();
     }
 }

@@ -15,7 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.mychatapplication.adapter.SearchUserDetailAdapter;
 import com.example.mychatapplication.model.User;
 
-public class QueryUserDetailActivity extends AppCompatActivity implements View.OnClickListener{
+public class QueryUserDetailActivity extends BaseActivity implements View.OnClickListener{
     private SearchUserDetailAdapter searchUserDetailAdapter;
     private RecyclerView recyclerView;
     private Button bt_addToPhonebook;

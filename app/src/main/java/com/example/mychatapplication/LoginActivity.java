@@ -5,8 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,20 +32,38 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends BaseActivity implements View.OnClickListener {
     private String logMeg;
     private JSONObject logResJson;
     private EditText et_account, et_password;
     private ImageView iv_close;
     private Button bt_login;
-    private Intent mIntent;
+    private SPRepository spRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        spRepository = SPRepository.getInstance();
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int screenHeight = dm.heightPixels;
+        Rect rect = new Rect();
+        ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                int height = rect.height();
+                if (screenHeight != height) {
+                    spRepository.setSoftKeyboardHeight(screenHeight - height);
+                }
+            }
+        };
+
         et_account = findViewById(R.id.et_nickname);
+        et_account.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         et_password = findViewById(R.id.et_phone);
+        et_password.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         bt_login = findViewById(R.id.bt_login);
         bt_login.setOnClickListener(this);
         iv_close = findViewById(R.id.iv_close);
@@ -61,7 +83,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     logMeg = e.toString();
-                    runOnUiThread(() -> Toast.makeText(LoginActivity.this, logMeg, Toast.LENGTH_LONG));
+                    runOnUiThread(() -> Toast.makeText(LoginActivity.this, logMeg, Toast.LENGTH_LONG).show());
                 }
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
@@ -75,21 +97,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         try {
                             //equal和==：内容比较和引用比较
                             if (logResJson.get("status").toString().equals("200") && logResJson.get("meg").toString().equals("登录成功")) {
+                                Log.d("Login", "登陆成功" + logResJson.get("jyId").toString());
                                 SPRepository.getInstance().saveLoginMsg(true, logResJson.get("jyId").toString());
-                                SPRepository.getInstance().getIsSaveLoginMsgOver().observe(LoginActivity.this, new Observer<Boolean>() {
-                                    @Override
-                                    public void onChanged(Boolean aBoolean) {
-                                        try {
-                                            MainApplication.getInstance().user = new MainApplication.User(logResJson.get("jyId").toString());
-                                        } catch (JSONException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                        WebSocketService.getInstance();
-                                        Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                    }
-                                });
+                                try {
+                                    MainApplication.getInstance().user = new MainApplication.User(logResJson.get("jyId").toString());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                WebSocketService.getInstance();
+                                Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+
                             }
                         } catch (JSONException e) {
                             throw new RuntimeException(e);

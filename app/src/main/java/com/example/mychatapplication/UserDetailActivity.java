@@ -13,7 +13,7 @@ import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
 import com.example.mychatapplication.model.User;
 
-public class UserDetailActivity extends AppCompatActivity {
+public class UserDetailActivity extends BaseActivity {
     private String jyId;
     private UserInfoRepository userInfoRepository;
     private UserDetailAdapter userDetailAdapter;

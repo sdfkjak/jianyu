@@ -1,12 +1,15 @@
 package com.example.mychatapplication.repository.sharedpreferencerepository;
 
+import android.util.Log;
+
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.HashMap;
 
 public class SPRepository {
     private static SPRepository spRepository;
-    private SPRepository(){}
+    private SPDao spDao;
+    private SPRepository(){ spDao = SPDao.getInstance(); }
     public synchronized static SPRepository getInstance(){
         if(spRepository == null){
             spRepository = new SPRepository();
@@ -26,12 +29,7 @@ public class SPRepository {
     }
 
     public void saveLoginMsg(boolean isLogin, String jyId){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                isSaveLoginMsgOver.postValue(SPDao.getInstance().saveLoginMsg(isLogin, jyId));
-            }
-        }).start();
+        SPDao.getInstance().saveLoginMsg(isLogin, jyId);
     }
 
     public void getLoginMsg(){
@@ -41,5 +39,15 @@ public class SPRepository {
                 loginMsgLiveData.postValue(SPDao.getInstance().getLoginMsg());
             }
         }).start();
+    }
+
+    public float getSoftKeyboardHeight(){
+        return spDao.getSoftKeyboardHeight();
+    }
+
+    public void setSoftKeyboardHeight(float height){
+        if(getSoftKeyboardHeight() == 0.0f){
+            spDao.setSoftKeyboardHeight(height);
+        }
     }
 }

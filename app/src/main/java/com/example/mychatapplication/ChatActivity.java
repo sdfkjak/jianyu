@@ -8,7 +8,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,6 +51,7 @@ import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.model.sendWS.TimeStamp;
 import com.example.mychatapplication.network.WebSocketService;
 import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.ChatUtil;
 import com.example.mychatapplication.util.PermissionUtil;
 import com.google.gson.Gson;
@@ -57,19 +61,21 @@ import org.json.JSONException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import okio.ByteString;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity {
     private final static String tag = "ChatActivity";
     private EditText et_message;
     private Button bt_send;
     private ImageView iv_moreAction, iv_expression, iv_voiceInput;
     private RecyclerView rv_chat, rv_moreActionContainer;
-    private ViewGroup.LayoutParams rv_moreActionContainerParams;
+    private ConstraintLayout.LayoutParams rv_moreActionContainerParams;
+    private ConstraintLayout.LayoutParams rv_chatParams;
     private PrivateChatAdapter privateChatAdapter;
     private MoreActionAdapter moreActionAdapter;
     private Toolbar tb_head;
@@ -78,7 +84,6 @@ public class ChatActivity extends AppCompatActivity {
     private ChatViewModel chatViewModel;
     private boolean innerTrigger = false;
     private int windowHeight = 0;
-    private int softKeyboardHeight;
     private InputMethodManager inputMethodManager;
     private boolean isKeyboardUp = false;
     private boolean isMoreActionUp = false;
@@ -94,22 +99,24 @@ public class ChatActivity extends AppCompatActivity {
     private boolean isWaitThreadRunning = false;
     private ActivityResultLauncher selectPhotoAlbumLauncher;
     private boolean firstIn;
-    private int oldFriendChatMessagesLength = 0;
     private boolean isFirstIn = true;
     private int oldChatMessageLength;
-    private ImageView iv_compression;
+    private SPRepository spRepository;
+    private int softKeyboardHeight;
+    private ConstraintLayout CL_chat, constraintLayout;
+
     public ActivityResultLauncher getSelectPhotoAlbumLauncher() {
         return selectPhotoAlbumLauncher;
-    }
-
-    public RecyclerView getRv_chat() {
-        return rv_chat;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        CL_chat = findViewById(R.id.CL_Chat);
+        constraintLayout = findViewById(R.id.constraintLayout);
+        spRepository = SPRepository.getInstance();
+        softKeyboardHeight = (int) spRepository.getSoftKeyboardHeight();
         ChatImageCacheManager.getInstance().flush();
         firstIn = true;
         if (savedInstanceState != null) {
@@ -122,29 +129,24 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
         initMoreActionAnim();
-        iv_expression = findViewById(R.id.iv_expression);
-        iv_expression.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
-            }
-        });
         rv_moreActionContainer = findViewById(R.id.rv_moreActionContainer);
         rv_moreActionContainer.setLayoutManager(new GridLayoutManager(this, 4));
         moreActionAdapter = new MoreActionAdapter(this);
         rv_moreActionContainer.setAdapter(moreActionAdapter);
-        rv_moreActionContainerParams = rv_moreActionContainer.getLayoutParams();
+        rv_moreActionContainerParams = (ConstraintLayout.LayoutParams) rv_moreActionContainer.getLayoutParams();
+        rv_chat = findViewById(R.id.rc_chat);
+        rv_chatParams = (ConstraintLayout.LayoutParams) rv_chat.getLayoutParams();
         et_message = findViewById(R.id.et_message);
         inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         chatTargetJyId = getIntent().getExtras().getString("jyId");
 
         tb_head = findViewById(R.id.tb_head);
         setSupportActionBar(tb_head);
-
         setToolbarTitleCenter(tb_head);
         tb_head.setNavigationIcon(R.drawable.baseline_chevron_left_24);
 
-        chatViewModel = new ChatViewModel(getApplication());
+//        chatViewModel = new ChatViewModel(getApplication());
+        chatViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
         iv_moreAction = findViewById(R.id.iv_moreAction);
         bt_send = findViewById(R.id.bt_send);
         ViewGroup.LayoutParams bt_sendParams = bt_send.getLayoutParams();
@@ -194,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
                         targetUser = user;
                         privateChatAdapter = new PrivateChatAdapter(ChatActivity.this, user);
                         tb_head.setTitle(user.getNickname());
-                        rv_chat = findViewById(R.id.rc_chat);
+
                         rv_chat.setLayoutManager(new MyLinearLayout(ChatActivity.this));
                         rv_chat.setAdapter(privateChatAdapter);
                     }
@@ -369,7 +371,6 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
-
     }
 
     @Override
@@ -433,18 +434,19 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initMoreActionAnim() {
-        moreActionValueAnimator = ValueAnimator.ofInt(0, 835);
+        moreActionValueAnimator = ValueAnimator.ofInt(0, softKeyboardHeight);
         moreActionValueAnimator.setDuration(200);
         moreActionValueAnimator.setInterpolator(new LinearInterpolator());
         moreActionValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(@NonNull ValueAnimator animation) {
-                if (privateChatAdapter.getChatMessageList().size() - 1 > 0) {
+                if (privateChatAdapter.getChatMessageList().size()> 0) {
                     rv_chat.scrollToPosition(privateChatAdapter.getChatDetailItemList().size() - 1);
                     innerTrigger = true;
                 }
                 rv_moreActionContainerParams.height = (int) animation.getAnimatedValue();
                 rv_moreActionContainer.setLayoutParams(rv_moreActionContainerParams);
+                Log.d(tag, rv_chat.getHeight() + "");
 
             }
         });
@@ -462,6 +464,18 @@ public class ChatActivity extends AppCompatActivity {
 
                 setSoftInputMode(false);
                 setUpItem("moreAction", true);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(rv_chat.getHeight() > 1192 ){
+                            ConstraintSet constraintSet = new ConstraintSet();
+                            constraintSet.clone(CL_chat);
+                            constraintSet.clear(rv_chat.getId(), ConstraintSet.TOP);
+                            constraintSet.connect(rv_chat.getId(), ConstraintSet.BOTTOM, constraintLayout.getId(), ConstraintSet.TOP);
+                            constraintSet.applyTo(CL_chat);
+                        }
+                    }
+                }).start();
             }
 
             @Override
@@ -473,8 +487,7 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
-
-        closeMoreActionValueAnimator = ValueAnimator.ofInt(835, 0);
+        closeMoreActionValueAnimator = ValueAnimator.ofInt(softKeyboardHeight, 0);
         closeMoreActionValueAnimator.setDuration(200);
         closeMoreActionValueAnimator.setInterpolator(new LinearInterpolator());
         closeMoreActionValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -524,7 +537,7 @@ public class ChatActivity extends AppCompatActivity {
                     inputMethodManager.showSoftInput(et_message, 0);
                 } else {
                     setSoftInputMode(true);
-                    rv_moreActionContainerParams.height = 835;
+                    rv_moreActionContainerParams.height = softKeyboardHeight;
                     rv_moreActionContainer.setLayoutParams(rv_moreActionContainerParams);
                     validCalculateVisibleHeight = false;
                     closeKeyboard();

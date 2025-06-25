@@ -20,6 +20,9 @@ public class NetWorkViewModel{
         }
         return netWorkViewModel;
     }
+    public void clear(){
+        netWorkViewModel = null;
+    }
     public User getUser(String jyId){
         return userRepository.getUser(jyId);
     }

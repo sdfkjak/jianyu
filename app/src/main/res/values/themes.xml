@@ -13,6 +13,12 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <style name="SplashScreenTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashscreen</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="postSplashScreenTheme">@style/AppCompatTheme</item>
+    </style>
+
     <style name="AppCompatTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@color/evelengray</item>
         <item name="android:windowLightStatusBar">true</item>

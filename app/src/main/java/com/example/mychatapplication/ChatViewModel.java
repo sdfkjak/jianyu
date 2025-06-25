@@ -14,6 +14,7 @@ import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.network.MessageHub;
 import com.example.mychatapplication.repository.SQLiteRepository.UserRepository;
+import com.example.mychatapplication.util.TimeUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -67,7 +68,8 @@ public class ChatViewModel extends AndroidViewModel {
                     }
                     if(i + 1 < chatMessageList.size()){
                         if (chatMessageList.get(i + 1).getTimestamp() - chatMessageList.get(i).getTimestamp() > 60 * 1000) {
-                            chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(i).getTimestamp()));
+                            chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(i + 1).getTimestamp()));
+                            Log.d("服务器时间", TimeUtil.detailDateDisplayFormat(MainApplication.applicationContext,chatMessageList.get(i + 1).getTimestamp())+ "添加时间");
                         }
                     }
                 }
@@ -87,7 +89,7 @@ public class ChatViewModel extends AndroidViewModel {
                     }
                     if(i + 1 < chatMessageList.size()){
                         if (chatMessageList.get(i + 1).getTimestamp() - chatMessageList.get(i).getTimestamp() > 60 * 1000) {
-                            chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(i).getTimestamp()));
+                            chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(i + 1).getTimestamp()));
                         }
                     }
                 }

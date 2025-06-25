@@ -31,6 +31,8 @@ import com.example.mychatapplication.adapter.PersonalInfo;
 import com.example.mychatapplication.adapter.PersonalInfoAdapter;
 import com.example.mychatapplication.commomclass.PersonalInfo.ModifyPersonalInfo;
 import com.example.mychatapplication.database.UserInfo;
+import com.example.mychatapplication.model.User;
+import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
 import com.example.mychatapplication.util.BuildMessageUtil;
 import com.example.mychatapplication.util.ImageUtil;
 import com.example.mychatapplication.util.UserInfoUtil;
@@ -51,7 +53,7 @@ import java.util.List;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class PersonInfoActivity extends AppCompatActivity {
+public class PersonInfoActivity extends BaseActivity {
     /**
      * 外部存储权限请求码
      */
@@ -74,26 +76,28 @@ public class PersonInfoActivity extends AppCompatActivity {
         rv_infoItems.setLayoutManager(new LinearLayoutManager(this));
         rv_infoItems.setAdapter(personalInfoAdapter);
         personalInfoViewModel = new ViewModelProvider(this).get(PersonalInfoViewModel.class);
-        personalInfoViewModel.getCurrentUserInfoLiveData(MainApplication.getInstance().user.jyId).observe(this, new Observer<UserInfo>() {
+        personalInfoViewModel.getUserLiveData(MainApplication.getInstance().user.jyId).observe(this, new Observer<User>() {
             @Override
-            public void onChanged(UserInfo userInfo) {
-                personalInfoList.clear();
-                oldUserInfo = userInfo;
-                for(int i = 0; i < PersonalInfo.getInfoNames().length; i++){
-                    if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("头像") && userInfo.getAvatar() != null){
-                        personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], ImageUtil.convertBase64ToBitmap(userInfo.getAvatar())));
-                    } else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("名字")){
-                        personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], userInfo.getNickname()));
-                    }else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("微信号")){
-                        personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], userInfo.getJyId()));
-                    }else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("二维码名片")){
-                        personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], R.drawable.baseline_qr_code_24));
-                    }else{
-                        personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i]));
+            public void onChanged(User user) {
+                if(user != null){
+                    personalInfoList.clear();
+//                    oldUserInfo = user;
+                    for(int i = 0; i < PersonalInfo.getInfoNames().length; i++){
+                        if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("头像")){
+                            personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], "ii"));
+                        }else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("名字")){
+                            personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], user.getNickname()));
+                        }else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("微信号")){
+                            personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], user.getJyId()));
+                        }else if(getResources().getString(PersonalInfo.getInfoNames()[i]).equals("二维码名片")){
+                            personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i], R.drawable.baseline_qr_code_24));
+                        }else{
+                            personalInfoList.add(new PersonalInfo(PersonalInfo.getInfoNames()[i]));
+                        }
                     }
+                    personalInfoAdapter.setPersonalInfoList(personalInfoList);
+                    personalInfoAdapter.notifyDataSetChanged();
                 }
-                personalInfoAdapter.setPersonalInfoList(personalInfoList);
-                personalInfoAdapter.notifyDataSetChanged();
             }
         });
         iv_back = findViewById(R.id.iv_back);
@@ -110,15 +114,16 @@ public class PersonInfoActivity extends AppCompatActivity {
                     Bitmap bitmap = (Bitmap)result.getData().getExtras().get("data");
                     String img = ImageUtil.convertBitmapToBase64(bitmap);
                     byte[] imgBytes = ImageUtil.bitmapToByteArray(bitmap);
+                    personalInfoViewModel.saveAvatar(MainApplication.getInstance().user.jyId, imgBytes);
 //                    try {
 //                        WebSocketClass.getInstance().getWebSocket().send(BuildMessageUtil.buildByteStringMessage("MODIFYPERSONALINFO", MainApplication.getInstance().user.jyId, null, null, imgBytes));
 //                    } catch (IOException e) {
 //                        throw new RuntimeException(e);
 //                    }
 //                    WebSocketClass.getInstance().getWebSocket().send(new Gson().toJson(new ModifyPersonalInfo("avatar", img)));
-                    UserInfo userInfo = oldUserInfo;
-                    userInfo.setAvatar(img);
-                    personalInfoViewModel.updateUserInfo(userInfo);
+//                    UserInfo userInfo = oldUserInfo;
+//                    userInfo.setAvatar(img);
+//                    personalInfoViewModel.updateUserInfo(userInfo);
                 }
             }
         });

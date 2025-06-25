@@ -23,4 +23,5 @@
     <color name="lightGray">#DDDDDD</color>
     <color name="silverGray">#C2C2C2</color>
     <color name="smokeWhite">#F2F2F2</color>
+    <color name="splashscreen">#FF0000</color>
 </resources>

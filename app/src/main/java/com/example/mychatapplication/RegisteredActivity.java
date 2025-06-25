@@ -11,12 +11,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.OkHttpUtil;
 import com.example.mychatapplication.util.PermissionUtil;
 
@@ -41,14 +45,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RegisteredActivity extends AppCompatActivity implements View.OnClickListener{
-    //http://172.19.50.90:8081/register
-    private String regUrl = "http://172.19.50.90:8081/register";
+public class RegisteredActivity extends BaseActivity implements View.OnClickListener{
     private String regMeg;
     private Bitmap avatar;
     private EditText et_nickname, et_password, et_phone;
     private TextView tv_nicknameMeg, tv_passwordMeg, tv_phoneMeg;
-    private ImageView iv_avatar;
+    private ImageView iv_avatar, iv_close;
     private Button bt_register;
     private int accountMaxLength = 16, accountMinLength = 1;
     private int passwordMaxLength = 16, passwordMinLength = 6;
@@ -56,20 +58,43 @@ public class RegisteredActivity extends AppCompatActivity implements View.OnClic
     private boolean isPhoneOK = false;
     private boolean isPasswordOK = false;
     private ActivityResultLauncher selectImgLaunch, cropImgLaunch;
+    private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener;
+    private SPRepository spRepository;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registered);
+        spRepository = SPRepository.getInstance();
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int screenHeight = dm.heightPixels;
+        Rect rect = new Rect();
+        onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                int height = rect.height();
+                if(screenHeight != height){
+                    spRepository.setSoftKeyboardHeight(screenHeight - height);
+                }
+            }
+        };
+
         iv_avatar = findViewById(R.id.iv_avatar);
         iv_avatar.setOnClickListener(this);
+        iv_close = findViewById(R.id.iv_close);
+        iv_close.setOnClickListener(this);
         tv_nicknameMeg = findViewById(R.id.tv_nicknameMeg);
         et_nickname = findViewById(R.id.et_nickname);
+        et_nickname.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         et_nickname.addTextChangedListener(new HideTextWatcher(et_nickname, accountMaxLength, accountMinLength));
         tv_passwordMeg = findViewById(R.id.tv_passwordMeg);
         et_password = findViewById(R.id.et_password);
+        et_password.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         et_password.addTextChangedListener(new HideTextWatcher(et_password, passwordMaxLength, passwordMinLength));
         tv_phoneMeg = findViewById(R.id.tv_phoneMeg);
         et_phone = findViewById(R.id.et_phone);
+        et_phone.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         et_phone.addTextChangedListener(new HideTextWatcher(et_phone, 11, 11));
         bt_register = findViewById(R.id.bt_register);
         bt_register.setOnClickListener(this);
@@ -138,6 +163,8 @@ public class RegisteredActivity extends AppCompatActivity implements View.OnClic
                 intent.setType("image/*");
                 selectImgLaunch.launch(intent);
             }
+        } else if (v.getId() == R.id.iv_close) {
+            finish();
         }
     }
 

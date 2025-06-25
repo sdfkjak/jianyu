@@ -115,7 +115,7 @@ public class PrivateChatAdapter extends RecyclerView.Adapter<PrivateChatAdapter.
                     ChatImageCacheManager.getInstance().getChatImageArrayListMutableLiveData().observe((LifecycleOwner) context, new Observer<ArrayList<ChatImage>>() {
                         @Override
                         public void onChanged(ArrayList<ChatImage> chatImages) {
-                            if (chatImages.size() != 0) {
+                            if (chatImages != null) {
                                 if(holder.iv_message.getTag().equals(chatDetailItem.getTimestamp())){
                                     boolean isExist = false;
                                     for (ChatImage chatImage : chatImages) {
@@ -188,6 +188,7 @@ public class PrivateChatAdapter extends RecyclerView.Adapter<PrivateChatAdapter.
                 break;
             case "TIME":
                 holder.tv_time.setText(TimeUtil.detailDateDisplayFormat(context, chatDetailItem.getTimestamp()));
+                Log.d("服务器时间", TimeUtil.detailDateDisplayFormat(context, chatDetailItem.getTimestamp()) + "最后");
                 break;
             default:
                 ;

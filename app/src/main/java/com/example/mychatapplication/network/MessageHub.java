@@ -43,7 +43,9 @@ public class MessageHub {
         }
         return messageHub;
     }
-
+    public void clear(){
+        messageHub = null;
+    }
     public LiveData<FriendRequest[]> getWSFriendApplicationInitLiveData() {
         return wsFriendApplicationInitMutableLiveData;
     }
@@ -100,6 +102,7 @@ public class MessageHub {
             case "RESPONSE_TIMESTAMP":
                 JSONObject responseTimestampJson  = new JSONObject(msg.get("content"));
                 wsResponseTimestamp.postValue(responseTimestampJson.getString("timestamp"));
+                Log.d(tag, "响应的时间戳"+responseTimestampJson.getString("timestamp"));
                 break;
             case "FRIEND_CHAT":
                 //不在线时接收的多人消息和在线时的消息都走这
@@ -161,10 +164,10 @@ public class MessageHub {
         }
     }
 
-    public LiveData<Map<String, String>> receiveOnClosing(int code, String reason){
-        Map<String, String> map = new HashMap<>();
-        map.put("code", code + "");
-        map.put("reason", reason);
-        return new MutableLiveData<>(map);
-    }
+//    public LiveData<Map<String, String>> receiveOnClosing(int code, String reason){
+//        Map<String, String> map = new HashMap<>();
+//        map.put("code", code + "");
+//        map.put("reason", reason);
+//        return new MutableLiveData<>(map);
+//    }
 }

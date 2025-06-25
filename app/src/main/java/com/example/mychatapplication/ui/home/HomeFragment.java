@@ -27,13 +27,13 @@ public class HomeFragment extends Fragment {
     private ChatItemAdapter chatItemAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         final RecyclerView rv_chatContainer = binding.rvChatContainer;
         rv_chatContainer.setLayoutManager(new LinearLayoutManager(requireContext()));
         chatItemAdapter = new ChatItemAdapter(getContext());
-
+        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         homeViewModel.getAllUserLiveData().observe(this, new Observer<List<User>>() {
             @Override
             public void onChanged(List<User> userList) {

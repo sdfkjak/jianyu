@@ -14,7 +14,7 @@ import com.example.mychatapplication.model.FriendRequest;
 import com.example.mychatapplication.network.WebSocketService;
 import com.google.gson.Gson;
 
-public class ApplyAddFriendActivity extends AppCompatActivity implements View.OnClickListener{
+public class ApplyAddFriendActivity extends BaseActivity implements View.OnClickListener{
     private EditText et_applyMeg, et_remark;
     private Button bt_send;
     @Override
