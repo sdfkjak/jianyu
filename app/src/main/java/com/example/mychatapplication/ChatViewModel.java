@@ -1,14 +1,10 @@
 package com.example.mychatapplication;
 
-import android.app.Application;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-import com.example.mychatapplication.adapter.PrivateChatAdapter;
 import com.example.mychatapplication.model.ChatDetailItem;
 import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.model.User;
@@ -16,9 +12,6 @@ import com.example.mychatapplication.network.MessageHub;
 import com.example.mychatapplication.repository.SQLiteRepository.UserRepository;
 import com.example.mychatapplication.util.TimeUtil;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,15 +20,15 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatViewModel extends AndroidViewModel {
+public class ChatViewModel extends ViewModel {
     private UserRepository userRepository;
     private MessageHub messageHub;
     private List<ChatDetailItem> chatDetailItemList = new ArrayList<>();
     private int addChatDetailItemCount = 0;
     private boolean isWaitForSend = false;
 
-    public ChatViewModel(@NonNull Application application) {
-        super(application);
+    public ChatViewModel() {
+        super();
         userRepository = new UserRepository();
         messageHub = MessageHub.getInstance();
     }
@@ -62,9 +55,9 @@ public class ChatViewModel extends AndroidViewModel {
                 chatDetailItemList.add(new ChatDetailItem(ChatDetailItem.ChatType.TIME.toString(), chatMessageList.get(0).getTimestamp()));
                 for (int i = 0; i < chatMessageList.size(); i++) {
                     if (chatMessageList.get(i).getType().equals("TEXT")) {
-                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.jyId) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getContent(), chatMessageList.get(i).getTimestamp()));
+                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.getJyId()) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getContent(), chatMessageList.get(i).getTimestamp()));
                     } else if (chatMessageList.get(i).getType().equals("IMAGE")) {
-                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.jyId) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getTimestamp(), chatMessageList.get(i).getWidth(), chatMessageList.get(i).getHeight()));
+                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.getJyId()) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getTimestamp(), chatMessageList.get(i).getWidth(), chatMessageList.get(i).getHeight()));
                     }
                     if(i + 1 < chatMessageList.size()){
                         if (chatMessageList.get(i + 1).getTimestamp() - chatMessageList.get(i).getTimestamp() > 60 * 1000) {
@@ -83,9 +76,9 @@ public class ChatViewModel extends AndroidViewModel {
                 }
                 for (int i = 0; i < chatMessageList.size(); i++) {
                     if (chatMessageList.get(i).getType().equals("TEXT")) {
-                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.jyId) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getContent(), chatMessageList.get(i).getTimestamp()));
+                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.getJyId()) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getContent(), chatMessageList.get(i).getTimestamp()));
                     } else if (chatMessageList.get(i).getType().equals("IMAGE")) {
-                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.jyId) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getTimestamp(), chatMessageList.get(i).getWidth(), chatMessageList.get(i).getHeight()));
+                        chatDetailItemList.add(new ChatDetailItem(chatMessageList.get(i).getSource().equals(MainApplication.getInstance().user.getJyId()) ? ChatDetailItem.ChatType.MYCHAT.toString() : ChatDetailItem.ChatType.OTHERCHAT.toString(), chatMessageList.get(i).getTimestamp(), chatMessageList.get(i).getWidth(), chatMessageList.get(i).getHeight()));
                     }
                     if(i + 1 < chatMessageList.size()){
                         if (chatMessageList.get(i + 1).getTimestamp() - chatMessageList.get(i).getTimestamp() > 60 * 1000) {
@@ -127,7 +120,7 @@ public class ChatViewModel extends AndroidViewModel {
                 User user = getUser(jyId);
                 String friendChatMessage = user.getFriendChatMessage();
                 JSONArray jsonArray;
-                if (friendChatMessage == null || friendChatMessage.length() == 0) {
+                if (friendChatMessage == null || friendChatMessage.isEmpty()) {
                     jsonArray = new JSONArray();
                     jsonArray = jsonArray.put(needInsertMessageJSONObject);
                 } else {

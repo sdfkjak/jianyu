@@ -15,10 +15,8 @@ import com.example.mychatapplication.model.User;
 
 public class UserDetailActivity extends BaseActivity {
     private String jyId;
-    private UserInfoRepository userInfoRepository;
     private UserDetailAdapter userDetailAdapter;
     private RecyclerView rv_container;
-    private UserInfo userInfo;
     private UserDetailViewModel userDetailViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +40,5 @@ public class UserDetailActivity extends BaseActivity {
                 }
             }
         });
-
-//        userInfoRepository = new UserInfoRepository(this);
-//        class GetUserInfoThread extends Thread{
-//            @Override
-//            public void run() {
-//                userInfo = userInfoRepository.getCurrentUserInfo(jyId);
-//                userDetailAdapter.setUserInfo(userInfo);
-//            }
-//        }
-//        new GetUserInfoThread().start();
-//        });
     }
 }

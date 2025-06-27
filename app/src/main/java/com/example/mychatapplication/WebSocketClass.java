@@ -111,8 +111,8 @@ public class WebSocketClass {
                 JSONObject initJson = new JSONObject();
                 try {
                     initJson.put("type", "INITCLIENT");
-                    initJson.put("jyId", MainApplication.getInstance().user.jyId);
-                    if(userInfoRepository.userInfoExist(MainApplication.getInstance().user.jyId)){
+                    initJson.put("jyId", MainApplication.getInstance().user.getJyId());
+                    if(userInfoRepository.userInfoExist(MainApplication.getInstance().user.getJyId())){
                         initJson.put("needInfo", false);
                     }else{
                         initJson.put("needInfo", true);

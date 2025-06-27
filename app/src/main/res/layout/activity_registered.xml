@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline65"
         app:layout_constraintEnd_toStartOf="@+id/guideline72"
         app:layout_constraintHorizontal_bias="0.1"
-        app:layout_constraintStart_toEndOf="@+id/et_nickname"
+        app:layout_constraintStart_toEndOf="@+id/regETNickname"
         app:layout_constraintTop_toTopOf="@+id/guideline64" />
 
     <TextView
@@ -38,7 +38,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline65" />
 
     <EditText
-        android:id="@+id/et_phone"
+        android:id="@+id/regETPhone"
         android:layout_width="150sp"
         android:layout_height="wrap_content"
         android:background="@null"
@@ -57,7 +57,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline66"
         app:layout_constraintEnd_toStartOf="@+id/guideline72"
         app:layout_constraintHorizontal_bias="0.1"
-        app:layout_constraintStart_toEndOf="@+id/et_phone"
+        app:layout_constraintStart_toEndOf="@+id/regETPhone"
         app:layout_constraintTop_toTopOf="@+id/guideline65"
         app:layout_constraintVertical_bias="0.406" />
 
@@ -71,7 +71,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline66" />
 
     <EditText
-        android:id="@+id/et_password"
+        android:id="@+id/regETPassword"
         android:layout_width="150sp"
         android:layout_height="wrap_content"
         android:background="@null"
@@ -89,7 +89,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline67"
         app:layout_constraintEnd_toStartOf="@+id/guideline72"
         app:layout_constraintHorizontal_bias="0.1"
-        app:layout_constraintStart_toEndOf="@+id/et_password"
+        app:layout_constraintStart_toEndOf="@+id/regETPassword"
         app:layout_constraintTop_toTopOf="@+id/guideline66" />
 
     <Button
@@ -156,7 +156,7 @@
         app:srcCompat="@drawable/baseline_photo_camera_24" />
 
     <EditText
-        android:id="@+id/et_nickname"
+        android:id="@+id/regETNickname"
         android:layout_width="150sp"
         android:layout_height="wrap_content"
         android:background="@null"

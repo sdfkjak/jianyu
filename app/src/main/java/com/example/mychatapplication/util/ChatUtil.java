@@ -1,8 +1,11 @@
 package com.example.mychatapplication.util;
 
+import android.util.Log;
+
 import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
+import com.example.mychatapplication.thread.ServerTime;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,14 +15,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class ChatUtil {
-    private final static int FIELD_SIZE = 30;
+    private final static int FIELD_SIZE = 40;
     static byte fillByte = 0x00;
-    public static byte[] buildByteMsg(String type, String targetJyId, String targetFriendChatId, byte[] imgBytes) throws IOException {
-        byte[] byteMsg = new byte[150 + imgBytes.length];
+    public static byte[] buildByteMsg(String type, String targetJyId, String targetFriendChatId, long timestamp, byte[] imgBytes) throws IOException {
+        byte[] byteMsg = new byte[200 + imgBytes.length];
         byte[] typeByte = fillBytesToFieldSize(type, FIELD_SIZE, fillByte);
-        byte[] sourceByte = fillBytesToFieldSize(MainApplication.getInstance().user.jyId, FIELD_SIZE, fillByte);
+        byte[] sourceByte = fillBytesToFieldSize(MainApplication.getInstance().user.getJyId(), FIELD_SIZE, fillByte);
         byte[] targetByte = fillBytesToFieldSize(targetJyId, FIELD_SIZE, fillByte);
-        byte[] timestampByte = fillBytesToFieldSize(MainApplication.getInstance().getTimeStamp() + "", FIELD_SIZE, fillByte);
+        byte[] timestampByte = fillBytesToFieldSize(timestamp+ "", FIELD_SIZE, fillByte);
         byte[] friendChatIdByte = fillBytesToFieldSize(targetFriendChatId, FIELD_SIZE, fillByte);
         System.arraycopy(typeByte, 0, byteMsg, 0, typeByte.length);
         System.arraycopy(sourceByte, 0, byteMsg, FIELD_SIZE, sourceByte.length);

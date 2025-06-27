@@ -40,10 +40,6 @@ public class NavigationActivity extends BaseActivity {
         vp2_fragments.setAdapter(tapPagerAdapter);
         setSupportActionBar(tb_head);
         setToolbarTitleCenter(tb_head);
-        if(MainApplication.getInstance().user != null && MainApplication.getInstance().user.jyId != null && !MainApplication.getInstance().isStartTime){
-            Log.d("服务器时间","开始计时");
-            MainApplication.getInstance().startTime();
-        }
         rg_title.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {

@@ -8,7 +8,9 @@ import androidx.annotation.Nullable;
 import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.model.receiveWS.ByteMsg;
 import com.example.mychatapplication.model.sendWS.InitClient;
+import com.example.mychatapplication.model.sendWS.LogInServer;
 import com.example.mychatapplication.model.sendWS.TimeStamp;
+import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -30,7 +32,6 @@ public class WebSocketService {
     private OkHttpClient okHttpClient;
     private Request request;
     private WebSocket webSocket;
-    private NetWorkViewModel netWorkViewModel;
 
     private WebSocketService() {
         okHttpClient = new OkHttpClient.Builder()
@@ -41,7 +42,6 @@ public class WebSocketService {
                 .url(MainApplication.wbUrl)
                 .build();
         WebSocketListener listener = createWebSocketListener();
-        netWorkViewModel = NetWorkViewModel.getInstance();
         webSocket = okHttpClient.newWebSocket(request, listener);
 
     }
@@ -58,7 +58,9 @@ public class WebSocketService {
             @Override
             public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
                 super.onOpen(webSocket, response);
-                sendWSStringMsg(new Gson().toJson(new InitClient(MainApplication.getInstance().user.jyId, !netWorkViewModel.getUserExist(MainApplication.getInstance().user.jyId))));
+//                if(MainApplication.getInstance().user != null){
+//                    WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new LogInServer()));
+//                }
             }
 
             @Override
@@ -67,7 +69,7 @@ public class WebSocketService {
                 Log.d(tag, "接收" + text);
                 try {
                     HashMap<String, String> result = paresStringMsg(text);
-                    MessageHub.getInstance().receiveStringMsg(result);
+                    DistributionHub.getInstance().distributeStringMessage(result);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
@@ -77,7 +79,7 @@ public class WebSocketService {
             public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
                 super.onMessage(webSocket, bytes);
                 ByteMsg byteMsg = paresByteMsg(bytes);
-                MessageHub.getInstance().receiveByteMsg(byteMsg);
+                DistributionHub.getInstance().distributeByteMessage(byteMsg);
             }
 
             @Override
@@ -100,27 +102,26 @@ public class WebSocketService {
                 }
                 Log.d( "WebSocket 连接失败异常原因：", t.getMessage());
                 WebSocketService.getInstance().webSocket = okHttpClient.newWebSocket(request, createWebSocketListener());
+                if(MainApplication.getInstance().user != null){
+                    WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new LogInServer()));
+                }
             }
         };
     }
-
     public void sendWSStringMsg(String jsonString) {
         Log.d(tag, "发送" + jsonString);
         webSocket.send(jsonString);
     }
-
     public void sendWSByteStringMsg(ByteString byteString) {
         Log.d(tag, "发送ByteString");
         webSocket.send(byteString);
     }
-
     public void wsClose(int code, String reason){
         webSocket.close(code, reason);
     }
     public void clearWebSocketService(){
         webSocketService = null;
     }
-
     private HashMap<String, String> paresStringMsg(String text) throws JSONException {
         HashMap<String, String> result = new HashMap<>();
         JSONObject jsonObject = new JSONObject(text);
@@ -129,7 +130,6 @@ public class WebSocketService {
         result.put("content", jsonObject.toString());
         return result;
     }
-
     private ByteMsg paresByteMsg(ByteString bytes) {
         String labelString = bytes.substring(0, 100).utf8();
         String[] labelStrings = labelString.split("\\|");
@@ -151,12 +151,10 @@ public class WebSocketService {
         }
         // 将ByteString转换为字节数组
         byte[] imgBytes = bytes.substring(100, bytes.size()).toByteArray();
-        Log.d("字节数据类型", typeString);
-        Log.d("字节数据来源", sourceString);
-        Log.d("字节数据时间戳", timestampString);
-        Log.d("字节数据图片长度", String.valueOf(imgBytes.length));
+        Log.d("WebSocketService", "字节数据类型"+typeString);
+        Log.d("WebSocketService", "字节数据来源"+sourceString);
+        Log.d("WebSocketService", "字节数据时间戳"+ timestampString);
+        Log.d("WebSocketService", "字节数据图片长度"+String.valueOf(imgBytes.length));
         return new ByteMsg(typeString, sourceString, timestampString, imgBytes);
     }
-
-
 }

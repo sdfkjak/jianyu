@@ -32,7 +32,6 @@ public class ContactFragment extends Fragment{
     private ContactAdapter contactAdapter;
 
     private RecyclerView rv_contact;
-    private List<UserInfo> userInfoList = new ArrayList<>();
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);

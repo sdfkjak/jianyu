@@ -30,7 +30,7 @@ public class ChatImageCacheManager {
         assert chatImageArrayList != null;
         chatImageArrayList.add(chatImage);
         Log.d("流程", "设置值");
-        Log.d("流程", "设置的值： " + chatImage.getJyId() + " 时间戳: " + chatImage.getTimestamp());
+        Log.d("流程", "设置的值： " + chatImage.getChatId() + " 时间戳: " + chatImage.getTimestamp());
         chatImageArrayListMutableLiveData.postValue(chatImageArrayList);
     }
 
@@ -40,7 +40,7 @@ public class ChatImageCacheManager {
 
     public ChatImage getChatImage(String jyId, long timestamp){
         for (int i = 0; i < chatImageArrayListMutableLiveData.getValue().size(); i++) {
-            if(chatImageArrayListMutableLiveData.getValue().get(i).getJyId().equals(jyId) && chatImageArrayListMutableLiveData.getValue().get(i).getTimestamp() == timestamp){
+            if(chatImageArrayListMutableLiveData.getValue().get(i).getChatId().equals(jyId) && chatImageArrayListMutableLiveData.getValue().get(i).getTimestamp() == timestamp){
                 return chatImageArrayListMutableLiveData.getValue().get(i);
             }
         }
@@ -52,7 +52,7 @@ public class ChatImageCacheManager {
     }
     public void deleteFromCache(String jyId, long timestamp){
         for (int i = 0; i < chatImageArrayListMutableLiveData.getValue().size(); i++) {
-            if(chatImageArrayListMutableLiveData.getValue().get(i).getJyId().equals(jyId) && chatImageArrayListMutableLiveData.getValue().get(i).getTimestamp() == timestamp){
+            if(chatImageArrayListMutableLiveData.getValue().get(i).getChatId().equals(jyId) && chatImageArrayListMutableLiveData.getValue().get(i).getTimestamp() == timestamp){
                 chatImageArrayListMutableLiveData.getValue().remove(i);
                 break;
             }

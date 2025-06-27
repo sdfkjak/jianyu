@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.database.UserInfoRepository;
@@ -17,10 +18,10 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeViewModel extends AndroidViewModel {
+public class HomeViewModel extends ViewModel {
     private UserRepository userRepository;
-    public HomeViewModel(@NonNull Application application) {
-        super(application);
+    public HomeViewModel() {
+        super();
         this.userRepository = new UserRepository();
     }
 

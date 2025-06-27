@@ -104,10 +104,17 @@ public class MessageHub {
                 wsResponseTimestamp.postValue(responseTimestampJson.getString("timestamp"));
                 Log.d(tag, "响应的时间戳"+responseTimestampJson.getString("timestamp"));
                 break;
+            case "FRIENDCHATINIT":
             case "FRIEND_CHAT":
                 //不在线时接收的多人消息和在线时的消息都走这
                 JSONObject friendChatJson  = new JSONObject(msg.get("content"));
-                JSONArray friendChatJSONArray = friendChatJson.getJSONArray("FRIENDCHAT");
+                JSONArray friendChatJSONArray;
+                try{
+                    friendChatJSONArray = friendChatJson.getJSONArray("FRIENDCHAT");
+                }catch (JSONException e){
+                    friendChatJSONArray = friendChatJson.getJSONArray("FRIENDCHATINIT");
+                }
+
                 for (int i = 0; i < friendChatJSONArray.length(); i++) {
                     String source = friendChatJSONArray.getJSONObject(i).getString("source");
                     if(netWorkViewModel.getUserExist(source)){
@@ -156,11 +163,14 @@ public class MessageHub {
             case "FRIENDINIT":
                 netWorkViewModel.saveAvatar(msg.getSource(), msg.getByteMsg());
                 break;
+            case "IMAGE":
             case "FRIEND_CHAT":
-                Log.d("流程", "添加");
                 ChatImageCacheManager.getInstance().addToCache(new ChatImage(msg.getSource(), Long.parseLong(msg.getTimestamp()), msg.getByteMsg()));
                 netWorkViewModel.saveChatImg(msg.getSource(), msg.getTimestamp() + "", msg.getByteMsg());
                 break;
+//            case "IMAGE":
+//
+//                break;
         }
     }
 

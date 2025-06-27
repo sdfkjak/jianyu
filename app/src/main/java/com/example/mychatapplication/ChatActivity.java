@@ -6,7 +6,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -48,10 +47,10 @@ import com.example.mychatapplication.model.ChatImage;
 import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.model.FriendChat;
 import com.example.mychatapplication.model.User;
-import com.example.mychatapplication.model.sendWS.TimeStamp;
 import com.example.mychatapplication.network.WebSocketService;
 import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
 import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
+import com.example.mychatapplication.thread.ServerTime;
 import com.example.mychatapplication.util.ChatUtil;
 import com.example.mychatapplication.util.PermissionUtil;
 import com.google.gson.Gson;
@@ -61,8 +60,7 @@ import org.json.JSONException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.NumberFormat;
-import java.util.ArrayList;
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.List;
 
@@ -114,7 +112,7 @@ public class ChatActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         CL_chat = findViewById(R.id.CL_Chat);
-        constraintLayout = findViewById(R.id.constraintLayout);
+        constraintLayout = findViewById(R.id.messageBox);
         spRepository = SPRepository.getInstance();
         softKeyboardHeight = (int) spRepository.getSoftKeyboardHeight();
         ChatImageCacheManager.getInstance().flush();
@@ -145,7 +143,6 @@ public class ChatActivity extends BaseActivity {
         setToolbarTitleCenter(tb_head);
         tb_head.setNavigationIcon(R.drawable.baseline_chevron_left_24);
 
-//        chatViewModel = new ChatViewModel(getApplication());
         chatViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
         iv_moreAction = findViewById(R.id.iv_moreAction);
         bt_send = findViewById(R.id.bt_send);
@@ -308,20 +305,20 @@ public class ChatActivity extends BaseActivity {
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
-                long currentTimestamp = MainApplication.getInstance().getTimeStamp();
-                FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, message, currentTimestamp));
+                long currentTimestamp = ServerTime.getInstance().getDetailTimestamp();
+                FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.getJyId(), message, currentTimestamp));
                 WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
-                chatViewModel.insertSendMsgToDB(chatTargetJyId, new ChatMessage(MainApplication.getInstance().user.jyId, message, currentTimestamp));
+                chatViewModel.insertSendMsgToDB(chatTargetJyId, new ChatMessage(MainApplication.getInstance().user.getJyId(), message, currentTimestamp));
             }
         });
 
         selectPhotoAlbumLauncher = registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), new ActivityResultCallback<List<Uri>>() {
             @Override
             public void onActivityResult(List<Uri> result) {
-                long currentTimestamp = MainApplication.getInstance().getTimeStamp();
+                long currentTimestamp = ServerTime.getInstance().getDetailTimestamp();
                 for (Uri uri : result) {
                     Log.d(tag, uri.getScheme());
-                    InputStream inputStream = null;
+                    InputStream inputStream;
                     ByteArrayOutputStream byteArrayOutputStream;
                     byte[] imgByte;
                     int imgHeight;
@@ -341,12 +338,12 @@ public class ChatActivity extends BaseActivity {
                         }
                         inputStream.close();
                         imgByte = byteArrayOutputStream.toByteArray();
-                        ChatImageCacheManager.getInstance().addToCache(new ChatImage(MainApplication.getInstance().user.jyId, currentTimestamp, imgByte));
-                        SDCardRepository.getInstance().saveChatImg(targetUser.getJyId(), currentTimestamp + "", imgByte);
-                        chatViewModel.insertSendMsgToDB(targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, currentTimestamp));
-                        byte[] byteMsg = ChatUtil.buildByteMsg("FRIENDCHAT", targetUser.getJyId(), targetUser.getFriendChatId(), imgByte);
+                        ChatImageCacheManager.getInstance().addToCache(new ChatImage(MainApplication.getInstance().user.getFriendChatId(), currentTimestamp, imgByte));
+                        SDCardRepository.getInstance().saveChatImg(targetUser.getFriendChatId(), currentTimestamp + "", imgByte);
+                        chatViewModel.insertSendMsgToDB(targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.getJyId(), imgWidth, imgHeight, currentTimestamp));
+                        byte[] byteMsg = ChatUtil.buildByteMsg("FRIENDCHAT", targetUser.getJyId(), targetUser.getFriendChatId(), currentTimestamp,imgByte);
                         ByteString byteString = ByteString.of(byteMsg);
-                        FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.jyId, imgWidth, imgHeight, currentTimestamp));
+                        FriendChat friendChat = new FriendChat(targetUser.getFriendChatId(), targetUser.getJyId(), new ChatMessage(MainApplication.getInstance().user.getJyId(), imgWidth, imgHeight, currentTimestamp));
                         WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(friendChat));
                         WebSocketService.getInstance().sendWSByteStringMsg(byteString);
                     } catch (IOException e) {
@@ -628,11 +625,5 @@ public class ChatActivity extends BaseActivity {
                 extraLayoutSpace[i] = 500;
             }
         }
-
-//        @Override
-//        protected int getExtraLayoutSpace(RecyclerView.State state) {
-//            return super.getExtraLayoutSpace(state);
-//
-//        }
     }
 }

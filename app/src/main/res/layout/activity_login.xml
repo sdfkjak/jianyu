@@ -24,7 +24,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline55" />
 
     <EditText
-        android:id="@+id/et_phone"
+        android:id="@+id/logETPassword"
         android:background="@null"
         android:layout_width="150sp"
         android:layout_height="wrap_content"
@@ -34,16 +34,17 @@
         app:layout_constraintTop_toTopOf="@+id/guideline42" />
 
     <EditText
-        android:id="@+id/et_nickname"
-        android:background="@null"
+        android:id="@+id/logETAccount"
         android:layout_width="150sp"
         android:layout_height="wrap_content"
+        android:background="@null"
         android:hint="手机号/简语账号"
         android:singleLine="true"
         android:textColorHint="@color/grey"
         app:layout_constraintBottom_toTopOf="@+id/guideline42"
         app:layout_constraintStart_toStartOf="@+id/guideline53"
-        app:layout_constraintTop_toTopOf="@+id/guideline41" />
+        app:layout_constraintTop_toTopOf="@+id/guideline41"
+        app:layout_constraintVertical_bias="0.48" />
 
     <TextView
         android:layout_width="wrap_content"

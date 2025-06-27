@@ -15,7 +15,7 @@ public abstract class UserInfoDatabase extends RoomDatabase {
     private static UserInfoDatabase userInfoDatabaseINSTANCE;
     public static synchronized UserInfoDatabase getDatabase(Context context){
         if(userInfoDatabaseINSTANCE == null){
-            userInfoDatabaseINSTANCE = Room.databaseBuilder(context.getApplicationContext(), UserInfoDatabase.class, MainApplication.USERINFODATABASE + MainApplication.getInstance().user.jyId).build();
+            userInfoDatabaseINSTANCE = Room.databaseBuilder(context.getApplicationContext(), UserInfoDatabase.class, MainApplication.USERINFODATABASE + MainApplication.getInstance().user.getJyId()).build();
         }
         return userInfoDatabaseINSTANCE;
     }

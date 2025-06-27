@@ -5,48 +5,25 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.mychatapplication.adapter.PersonalInfo;
 import com.example.mychatapplication.adapter.PersonalInfoAdapter;
-import com.example.mychatapplication.commomclass.PersonalInfo.ModifyPersonalInfo;
 import com.example.mychatapplication.database.UserInfo;
 import com.example.mychatapplication.model.User;
-import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
-import com.example.mychatapplication.util.BuildMessageUtil;
 import com.example.mychatapplication.util.ImageUtil;
-import com.example.mychatapplication.util.UserInfoUtil;
-import com.google.gson.Gson;
 
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +41,6 @@ public class PersonInfoActivity extends BaseActivity {
     private ImageView iv_back;
     private PersonalInfoAdapter personalInfoAdapter;
     private List<PersonalInfo> personalInfoList = new ArrayList<PersonalInfo>();
-    private UserInfo oldUserInfo;
     private ActivityResultLauncher selectImageLauncher;
     private ActivityResultLauncher cropImageLaunch;
     @Override
@@ -76,7 +52,7 @@ public class PersonInfoActivity extends BaseActivity {
         rv_infoItems.setLayoutManager(new LinearLayoutManager(this));
         rv_infoItems.setAdapter(personalInfoAdapter);
         personalInfoViewModel = new ViewModelProvider(this).get(PersonalInfoViewModel.class);
-        personalInfoViewModel.getUserLiveData(MainApplication.getInstance().user.jyId).observe(this, new Observer<User>() {
+        personalInfoViewModel.getUserLiveData(MainApplication.getInstance().user.getJyId()).observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
                 if(user != null){
@@ -114,7 +90,7 @@ public class PersonInfoActivity extends BaseActivity {
                     Bitmap bitmap = (Bitmap)result.getData().getExtras().get("data");
                     String img = ImageUtil.convertBitmapToBase64(bitmap);
                     byte[] imgBytes = ImageUtil.bitmapToByteArray(bitmap);
-                    personalInfoViewModel.saveAvatar(MainApplication.getInstance().user.jyId, imgBytes);
+                    personalInfoViewModel.saveAvatar(MainApplication.getInstance().user.getJyId(), imgBytes);
 //                    try {
 //                        WebSocketClass.getInstance().getWebSocket().send(BuildMessageUtil.buildByteStringMessage("MODIFYPERSONALINFO", MainApplication.getInstance().user.jyId, null, null, imgBytes));
 //                    } catch (IOException e) {

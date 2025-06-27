@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class FriendChat {
     private String type = "FRIENDCHAT";
     private String friendChatId;
-    private String source = MainApplication.getInstance().user.jyId;
+    private String source = MainApplication.getInstance().user.getJyId();
     private String target;
     private ChatMessage chatMessage;
 

@@ -15,10 +15,8 @@ public abstract class UserDatabase extends RoomDatabase {
 
     public synchronized static UserDatabase getInstance(){
         if(userDatabase == null){
-            Log.d("Login", MainApplication.USERDATABASE + MainApplication.getInstance().user.jyId + " NEW");
-            userDatabase = Room.databaseBuilder(MainApplication.applicationContext, UserDatabase.class, MainApplication.USERDATABASE + MainApplication.getInstance().user.jyId).build();
+            userDatabase = Room.databaseBuilder(MainApplication.applicationContext, UserDatabase.class, MainApplication.USERDATABASE + MainApplication.getInstance().user.getJyId()).build();
         }
-        Log.d("Login", MainApplication.USERDATABASE + MainApplication.getInstance().user.jyId + "  OLD");
         return userDatabase;
     }
     public abstract UserDao getUserDao();

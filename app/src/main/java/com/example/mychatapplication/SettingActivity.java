@@ -23,7 +23,6 @@ public class SettingActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 WebSocketService.getInstance().wsClose(1000, "EXIT");
-                MainApplication.serverTimeThread.stopRunning();
                 WebSocketService.getInstance().clearWebSocketService();
                 UserDatabase.getInstance().clearUserDatabase();
                 MessageHub.getInstance().clear();

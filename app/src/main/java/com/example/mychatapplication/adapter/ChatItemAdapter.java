@@ -3,6 +3,7 @@ package com.example.mychatapplication.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.mychatapplication.ChatActivity;
 import com.example.mychatapplication.MainApplication;
 import com.example.mychatapplication.R;
+import com.example.mychatapplication.databinding.ItemChatBinding;
 import com.example.mychatapplication.model.ChatMessage;
 import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.util.TimeUtil;
@@ -42,9 +44,8 @@ public class ChatItemAdapter extends RecyclerView.Adapter<ChatItemAdapter.ChatIt
     @NonNull
     @Override
     public ChatItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.item_chat, parent, false);
-        return new ChatItemViewHolder(view);
+        ItemChatBinding binding = ItemChatBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new ChatItemViewHolder(binding);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class ChatItemAdapter extends RecyclerView.Adapter<ChatItemAdapter.ChatIt
         } else if (lastChatMessages.getType().equals("IMAGE")) {
             holder.tv_message.setText("[图片]");
         }
-
+        Log.d("时间问题", TimeUtil.dateDisplayFormat(context, lastChatMessages.getTimestamp()) + "");
         holder.tv_time.setText(TimeUtil.dateDisplayFormat(context, lastChatMessages.getTimestamp()));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,16 +84,17 @@ public class ChatItemAdapter extends RecyclerView.Adapter<ChatItemAdapter.ChatIt
     }
 
     class ChatItemViewHolder extends RecyclerView.ViewHolder{
+        private ItemChatBinding binding;
         ImageView iv_avatar;
         TextView tv_nickname, tv_message, tv_time;
         View divider;
-        public ChatItemViewHolder(@NonNull View itemView) {
-            super(itemView);
-            iv_avatar = itemView.findViewById(R.id.iv_avatar);
-            tv_nickname = itemView.findViewById(R.id.tv_nickname);
-            tv_message = itemView.findViewById(R.id.tv_message);
-            tv_time = itemView.findViewById(R.id.tv_time);
-            divider = itemView.findViewById(R.id.divider);
+        public ChatItemViewHolder(ItemChatBinding binding) {
+            super(binding.getRoot());
+            iv_avatar = binding.ivAvatar;
+            tv_nickname = binding.tvNickname;
+            tv_message = binding.tvMessage;
+            tv_time = binding.tvTime;
+            divider = binding.divider;
         }
     }
 }

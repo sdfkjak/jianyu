@@ -1,26 +1,22 @@
 package com.example.mychatapplication;
 
-import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
 
-import com.example.mychatapplication.database.UserInfo;
-import com.example.mychatapplication.database.UserInfoRepository;
 import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
 import com.example.mychatapplication.repository.SQLiteRepository.UserRepository;
 
-public class PersonalInfoViewModel extends AndroidViewModel {
+public class PersonalInfoViewModel extends ViewModel {
     private UserRepository userRepository;
     private SDCardRepository sdCardRepository;
 
-    public PersonalInfoViewModel(@NonNull Application application) {
-        super(application);
+    public PersonalInfoViewModel() {
+        super();
         this.userRepository = new UserRepository();
         this.sdCardRepository = SDCardRepository.getInstance();
     }
+
     public LiveData<User> getUserLiveData(String jyId) {
         return userRepository.getUserLiveData(jyId);
     }
@@ -28,7 +24,4 @@ public class PersonalInfoViewModel extends AndroidViewModel {
     public void saveAvatar(String fileName, byte[] bytes){
         sdCardRepository.saveAvatar(fileName, bytes);
     }
-//    public void updateUserInfo(UserInfo... userInfos){
-//        userInfoRepository.updateUserInfo(userInfos);
-//    }
 }

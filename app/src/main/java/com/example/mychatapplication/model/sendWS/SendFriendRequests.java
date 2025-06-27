@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class SendFriendRequests {
     private String type = "FRIENDREQUEST";
-    private String source = MainApplication.getInstance().user.jyId;
+    private String source = MainApplication.getInstance().user.getJyId();
     private String target;
     private FriendRequestMessage message;
 

@@ -5,7 +5,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,43 +14,31 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mychatapplication.databinding.ActivityRegisteredBinding;
 import com.example.mychatapplication.repository.sharedpreferencerepository.SPRepository;
 import com.example.mychatapplication.util.OkHttpUtil;
 import com.example.mychatapplication.util.PermissionUtil;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class RegisteredActivity extends BaseActivity implements View.OnClickListener{
     private String regMeg;
     private Bitmap avatar;
-    private EditText et_nickname, et_password, et_phone;
-    private TextView tv_nicknameMeg, tv_passwordMeg, tv_phoneMeg;
-    private ImageView iv_avatar, iv_close;
-    private Button bt_register;
     private int accountMaxLength = 16, accountMinLength = 1;
     private int passwordMaxLength = 16, passwordMinLength = 6;
     private boolean isNicknameOK = false;
@@ -60,10 +47,15 @@ public class RegisteredActivity extends BaseActivity implements View.OnClickList
     private ActivityResultLauncher selectImgLaunch, cropImgLaunch;
     private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener;
     private SPRepository spRepository;
+    private InputMethodManager imm;
+
+    private ActivityRegisteredBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registered);
+        binding = ActivityRegisteredBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         spRepository = SPRepository.getInstance();
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -80,31 +72,22 @@ public class RegisteredActivity extends BaseActivity implements View.OnClickList
             }
         };
 
-        iv_avatar = findViewById(R.id.iv_avatar);
-        iv_avatar.setOnClickListener(this);
-        iv_close = findViewById(R.id.iv_close);
-        iv_close.setOnClickListener(this);
-        tv_nicknameMeg = findViewById(R.id.tv_nicknameMeg);
-        et_nickname = findViewById(R.id.et_nickname);
-        et_nickname.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
-        et_nickname.addTextChangedListener(new HideTextWatcher(et_nickname, accountMaxLength, accountMinLength));
-        tv_passwordMeg = findViewById(R.id.tv_passwordMeg);
-        et_password = findViewById(R.id.et_password);
-        et_password.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
-        et_password.addTextChangedListener(new HideTextWatcher(et_password, passwordMaxLength, passwordMinLength));
-        tv_phoneMeg = findViewById(R.id.tv_phoneMeg);
-        et_phone = findViewById(R.id.et_phone);
-        et_phone.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
-        et_phone.addTextChangedListener(new HideTextWatcher(et_phone, 11, 11));
-        bt_register = findViewById(R.id.bt_register);
-        bt_register.setOnClickListener(this);
-
+        binding.ivAvatar.setOnClickListener(this);
+        binding.ivClose.setOnClickListener(this);
+        binding.regETNickname.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+        binding.regETNickname.addTextChangedListener(new HideTextWatcher(binding.regETNickname, accountMaxLength, accountMinLength));
+        binding.regETPassword.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+        binding.regETPassword.addTextChangedListener(new HideTextWatcher(binding.regETPassword, passwordMaxLength, passwordMinLength));
+        binding.regETPhone.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+        binding.regETPhone.addTextChangedListener(new HideTextWatcher(binding.regETPhone, 11, 11));
+        binding.btRegister.setOnClickListener(this);
+        binding.btRegister.setClickable(false);
         cropImgLaunch = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(result.getData() != null && result.getResultCode() == RESULT_OK){
                     avatar = (Bitmap)result.getData().getExtras().get("data");
-                    iv_avatar.setImageBitmap(avatar);
+                    binding.ivAvatar.setImageBitmap(avatar);
                 }
             }
         });
@@ -129,16 +112,16 @@ public class RegisteredActivity extends BaseActivity implements View.OnClickList
     public void onClick(View v){
         if(v.getId() == R.id.bt_register){
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-            builder.addFormDataPart("nickname", et_nickname.getText().toString());
-            builder.addFormDataPart("password", et_password.getText().toString());
-            builder.addFormDataPart("phone", et_phone.getText().toString());
+            builder.addFormDataPart("nickname", binding.regETNickname.getText().toString());
+            builder.addFormDataPart("password", binding.regETPassword.getText().toString());
+            builder.addFormDataPart("phone", binding.regETPhone.getText().toString());
             if(avatar != null){
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 avatar.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 byte[] avatarBytes = baos.toByteArray();
                 builder.addFormDataPart("avatar", "avatar.png", RequestBody.create(avatarBytes, MediaType.parse("image/png")));
             }else{
-                Bitmap defaultAvatar = BitmapFactory.decodeResource(RegisteredActivity.this.getResources(), R.drawable.defaultavater);
+                Bitmap defaultAvatar = BitmapFactory.decodeResource(this.getResources(), R.drawable.defaultavater);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 defaultAvatar.compress(Bitmap.CompressFormat.PNG, 0, byteArrayOutputStream);
                 builder.addFormDataPart("avatar", "avatar.png", RequestBody.create(byteArrayOutputStream.toByteArray(), MediaType.parse("image/png")));
@@ -195,76 +178,68 @@ public class RegisteredActivity extends BaseActivity implements View.OnClickList
         public void afterTextChanged(Editable s){
             String str = s.toString().trim();
             switch(mEditText.getId()){
-                case R.id.et_nickname:
+                case R.id.regETNickname:
                     if(str.length() < mMinLength){
-                        tv_nicknameMeg.setText("昵称长度不得小于" + String.valueOf(mMinLength));
+                        binding.tvNicknameMeg.setText("昵称长度不得小于" + mMinLength);
                     } else if (str.length() >= mMinLength && str.length() <= mMaxLength) {
-                        tv_nicknameMeg.setText("OK");
+                        binding.tvNicknameMeg.setText("OK");
                         if(str.length() == mMaxLength){
-                            tv_nicknameMeg.setText("已达最大长度" + String.valueOf(mMaxLength));
-                            InputMethodManager imm = (InputMethodManager) RegisteredActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            binding.tvNicknameMeg.setText("已达最大长度" + mMaxLength);
                             imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
                         }
                         isNicknameOK = true;
-                        if(isNicknameOK && isPhoneOK && isPasswordOK){
-                            bt_register.setClickable(true);
-                            bt_register.setBackgroundResource(R.drawable.shape_register_button_clickable);
-                            bt_register.setTextColor(getResources().getColor(R.color.white, null));
-                        }
+                        setRegisteredBtnClickable();
                     }else{
-                        str = str.substring(0, mMaxLength);
-                        Log.d("str", str);
-                        mEditText.setText(str);
-                        mEditText.setSelection(str.length());
+                        truncationEditText(str);
                     }
                     break;
-                case R.id.et_phone:
+                case R.id.regETPhone:
                     if(str.length() < mMinLength){
-                        tv_phoneMeg.setText("手机号长度不得小于" + String.valueOf(mMinLength));
+                        binding.tvPhoneMeg.setText("手机号长度不得小于" + mMinLength);
                     } else if (str.length() >= mMinLength && str.length() <= mMaxLength) {
-                        tv_phoneMeg.setText("OK");
+                        binding.tvPhoneMeg.setText("OK");
                         if(str.length() == mMaxLength){
-                            tv_phoneMeg.setText("已达最大长度" + String.valueOf(mMaxLength));
-                            InputMethodManager imm = (InputMethodManager) RegisteredActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            binding.tvPhoneMeg.setText("已达最大长度" + mMaxLength);
                             imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
                         }
                         isPhoneOK = true;
-                        if(isNicknameOK && isPhoneOK && isPasswordOK){
-                            bt_register.setClickable(true);
-                            bt_register.setBackgroundResource(R.drawable.shape_register_button_clickable);
-                            bt_register.setTextColor(getResources().getColor(R.color.white, null));
-                        }
+                        setRegisteredBtnClickable();
                     }else{
-                        str = str.substring(0, mMaxLength);
-                        Log.d("str", str);
-                        mEditText.setText(str);
-                        mEditText.setSelection(str.length());
+                        truncationEditText(str);
                     }
                     break;
-                case R.id.et_password:
+                case R.id.regETPassword:
                     if(str.length() < mMinLength){
-                        tv_passwordMeg.setText("密码长度不得小于" + String.valueOf(mMinLength));
+                        binding.tvPasswordMeg.setText("密码长度不得小于" + mMinLength);
                     } else if (str.length() >= mMinLength && str.length() <= mMaxLength) {
-                        tv_passwordMeg.setText("OK");
+                        binding.tvPasswordMeg.setText("OK");
                         if(str.length() == mMaxLength){
-                            tv_passwordMeg.setText("已达最大长度" + String.valueOf(mMaxLength));
-                            InputMethodManager imm = (InputMethodManager) RegisteredActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            binding.tvPasswordMeg.setText("已达最大长度" + mMaxLength);
                             imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
                         }
                         isPasswordOK = true;
-                        if(isNicknameOK && isPhoneOK && isPasswordOK){
-                            bt_register.setClickable(true);
-                            bt_register.setBackgroundResource(R.drawable.shape_register_button_clickable);
-                            bt_register.setTextColor(getResources().getColor(R.color.white, null));
-                        }
+                        setRegisteredBtnClickable();
                     }else{
-                        str = str.substring(0, mMaxLength);
-                        Log.d("str", str);
-                        mEditText.setText(str);
-                        mEditText.setSelection(str.length());
+                        truncationEditText(str);
                     }
                     break;
             }
         };
+
+        private void truncationEditText(String str){
+            str = str.substring(0, mMaxLength);
+            mEditText.setText(str);
+            mEditText.setSelection(str.length());
+        }
+    }
+
+    private void setRegisteredBtnClickable(){
+        if(isNicknameOK && isPhoneOK && isPasswordOK){
+            binding.btRegister.setClickable(true);
+            binding.btRegister.setBackgroundResource(R.drawable.shape_register_button_clickable);
+            binding.btRegister.setTextColor(getResources().getColor(R.color.white, null));
+        }else {
+            binding.btRegister.setClickable(false);
+        }
     }
 }

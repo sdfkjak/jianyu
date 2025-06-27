@@ -1,22 +1,22 @@
 package com.example.mychatapplication.model;
 
 public class ChatImage {
-    private String jyId;
+    private String chatId;
     private long timestamp;
     private byte[] imgByte;
 
-    public ChatImage(String jyId, long timestamp, byte[] imgByte) {
-        this.jyId = jyId;
+    public ChatImage(String chatId, long timestamp, byte[] imgByte) {
+        this.chatId = chatId;
         this.timestamp = timestamp;
         this.imgByte = imgByte;
     }
 
-    public String getJyId() {
-        return jyId;
+    public String getChatId() {
+        return chatId;
     }
 
-    public void setJyId(String jyId) {
-        this.jyId = jyId;
+    public void setChatId(String chatId) {
+        this.chatId = chatId;
     }
 
     public long getTimestamp() {

@@ -65,7 +65,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         holder.bt_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WebSocketService.getInstance().sendWSStringMsg((new Gson()).toJson(new AcceptFriendRequest(friendRequest.getFriendRequestsId(), MainApplication.getInstance().user.jyId, friendRequest.getUser().getJyId())));
+                WebSocketService.getInstance().sendWSStringMsg((new Gson()).toJson(new AcceptFriendRequest(friendRequest.getFriendRequestsId(), MainApplication.getInstance().user.getJyId(), friendRequest.getUser().getJyId())));
                 holder.bt_add.setVisibility(View.GONE);
                 holder.tv_hasAdd.setVisibility(View.VISIBLE);
             }

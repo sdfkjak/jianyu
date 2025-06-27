@@ -33,7 +33,7 @@ public class NotificationsFragment extends Fragment {
         mineAdapter = new MineAdapter(getActivity());
         rv_container = binding.rvContainer;
         rv_container.setLayoutManager(new LinearLayoutManager(getContext()));
-        notificationsViewModel.getUserLiveData(MainApplication.getInstance().user.jyId).observe(this, new Observer<User>() {
+        notificationsViewModel.getUserLiveData(MainApplication.getInstance().user.getJyId()).observe(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
                 if(user != null){

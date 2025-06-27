@@ -4,7 +4,7 @@ import com.example.mychatapplication.MainApplication;
 
 public class SearchUser {
     private String type = "QUERYUSER";
-    private String source = MainApplication.getInstance().user.jyId;
+    private String source = MainApplication.getInstance().user.getJyId();
     private String searchString;
 
     public SearchUser(String searchString) {

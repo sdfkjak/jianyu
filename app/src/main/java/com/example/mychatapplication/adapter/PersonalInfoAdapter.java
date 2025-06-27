@@ -82,7 +82,7 @@ public class PersonalInfoAdapter extends RecyclerView.Adapter<PersonalInfoAdapte
             params.width = 200;
             holder.iv_img.setLayoutParams(params);
             holder.iv_img.setVisibility(View.VISIBLE);
-            RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, MainApplication.getInstance().user.jyId));
+            RequestBuilder<Drawable> builder = Glide.with(context).load(new File(MainApplication.getInstance().avatarFolder, MainApplication.getInstance().user.getJyId()));
             RequestOptions options = new RequestOptions().bitmapTransform(new RoundedCorners(30));
             builder.apply(options).into(holder.iv_img);
             holder.itemView.setOnClickListener(new View.OnClickListener() {

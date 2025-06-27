@@ -4,7 +4,7 @@ import com.example.mychatapplication.MainApplication;
 
 public class TimeStamp {
     private String type = "GETTIMESTAMP";
-    private String source = MainApplication.getInstance().user.jyId;
+    private String source = MainApplication.getInstance().user.getJyId();
     private long timestamp;
 
     public String getType() {

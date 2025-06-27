@@ -10,23 +10,17 @@ import android.util.Log;
 
 //import com.example.mychatapplication.database.UserDBHelper;
 
-import androidx.annotation.Nullable;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
-import com.bumptech.glide.load.engine.Resource;
+import com.example.mychatapplication.model.User;
 import com.example.mychatapplication.model.sendWS.TimeStamp;
 import com.example.mychatapplication.network.MessageHub;
 import com.example.mychatapplication.network.WebSocketService;
 import com.example.mychatapplication.repository.SDcardRepository.SDCardRepository;
-import com.example.mychatapplication.thread.ServerTimeThread;
+import com.example.mychatapplication.thread.ServerTime;
 import com.google.gson.Gson;
 
 import java.io.File;
-
-import okhttp3.WebSocket;
 
 public class MainApplication extends Application {
     private final static String tag = "MainApplication";
@@ -37,11 +31,7 @@ public class MainApplication extends Application {
     public static String wbUrl = "ws://" + ip_address + ":8080";
     public static String USERDATABASE = "UserDataBase";
     public static String USERINFODATABASE = "UserInfoDataBase";
-
-    private long serverTimestamp;
-    private long intervalTimestamp;
     public boolean isStartTime = false;
-    private MessageHub messageHub;
 
     public User user;
 
@@ -49,26 +39,9 @@ public class MainApplication extends Application {
     private SDCardRepository sdCardRepository;
     public static Resources resources;
     public static Context applicationContext;
-    public static ServerTimeThread serverTimeThread = new ServerTimeThread();
 
     public static MainApplication getInstance() {
         return mApp;
-    }
-
-    public long getServerTimestamp() {
-        return serverTimestamp;
-    }
-
-    public void setServerTimestamp(long serverTimestamp) {
-        this.serverTimestamp = serverTimestamp;
-    }
-
-    public long getIntervalTimestamp() {
-        return intervalTimestamp;
-    }
-
-    public void setIntervalTimestamp(long intervalTimestamp) {
-        this.intervalTimestamp = intervalTimestamp;
     }
 
     @Override
@@ -91,41 +64,8 @@ public class MainApplication extends Application {
         if(!chatFolder.exists()){
             sdCardRepository.createFolder(publicFile, "chat");
         }
-
         Log.d(tag, avatarFolder.getAbsolutePath());
         Log.d(tag, cacheFolder.getAbsolutePath());
-
-    }
-
-    public void startTime(){
-        WebSocketService.getInstance().sendWSStringMsg(new Gson().toJson(new TimeStamp()));
-        messageHub = MessageHub.getInstance();
-        messageHub.getWSResponseTimestamp().observeForever(new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                setServerTimestamp(Long.parseLong(s));
-                Log.d("服务器时间", DateUtils.formatDateTime(MainApplication.applicationContext, serverTimestamp, FORMAT_SHOW_TIME) + "获取的服务器时间");
-                intervalTimestamp = 0;
-                if(!isStartTime){
-                    serverTimeThread.start();
-                    isStartTime = true;
-                }
-            }
-        });
-    }
-    public long getTimeStamp() {
-        Log.d(tag, DateUtils.formatDateTime(this, serverTimestamp, FORMAT_SHOW_TIME) + "服务器时间");
-        Log.d(tag, intervalTimestamp / 1_000_000_000L + "距离上次获取服务器时间过去秒数");
-        Log.d(tag, DateUtils.formatDateTime(this, serverTimestamp + intervalTimestamp / 1_000_000_000L, FORMAT_SHOW_TIME) + "具体时间");
-        return serverTimestamp + intervalTimestamp / 1_000_000_000L;
-    }
-
-    public static class User {
-        public String jyId;
-
-        public User(String userId) {
-            this.jyId = userId;
-        }
     }
 
     public void clearUser() {
